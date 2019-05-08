@@ -1,4 +1,6 @@
-﻿using System.Windows;
+﻿using System;
+using System.Collections.Generic;
+using System.Windows;
 using WpfTreeView;
 
 namespace RLReplayMan
@@ -8,22 +10,36 @@ namespace RLReplayMan
     /// </summary>
     public partial class MainWindow : Window
     {
+        public string RLReplayPath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+        public List<DirectoryItem> CurrentReplayList;
+
         public MainWindow()
         {
             InitializeComponent();
             var ds = new DirectoryStructureViewModel();
             this.DataContext = ds;
+            CurrentReplayList = DirectoryStructure.GetDirectoryFiles(RLReplayPath, "*.replay");
+            currentFileList.ItemsSource = CurrentReplayList;
         }
 
         private void FolderView_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
         {
 
-            //var files = DirectoryStructureViewModel.SelectedItem.Files;
             if (DirectoryStructureViewModel.SelectedItem != null)
             {
                 var selected = (DirectoryItemViewModel)FolderView.SelectedItem;
-                //fileList.ItemsSource = DirectoryStructureViewModel.SelectedItem.Files;
-                fileList.ItemsSource = DirectoryStructure.GetDirectoryFiles(selected.FullPath);
+                fileList.ItemsSource = DirectoryStructure.GetDirectoryFiles(selected.FullPath, "*.replay");
+                var listHasItems = fileList.Items.Count > 0;
+                if (listHasItems)
+                {
+                    ListEmptyLabel.Visibility = Visibility.Hidden;
+                    fileList.Visibility = Visibility.Visible;
+                }
+                else
+                {
+                    ListEmptyLabel.Visibility = Visibility.Visible;
+                    fileList.Visibility = Visibility.Hidden;
+                }
             }
         }
 

@@ -47,7 +47,7 @@ namespace WpfTreeView
             return items;
         }
 
-        public static List<DirectoryItem> GetDirectoryFiles(string fullPath)
+        public static List<DirectoryItem> GetDirectoryFiles(string fullPath, string searchPattern = null)
         {
             #region Get Files
             var items = new List<DirectoryItem>();
@@ -56,10 +56,13 @@ namespace WpfTreeView
             // ignoring any issues doing so
             try
             {
-                var fs = Directory.GetFiles(fullPath);
+                if (string.IsNullOrEmpty(searchPattern))
+                    searchPattern = "*.*";
+
+                var fs = Directory.GetFiles(fullPath, searchPattern);
 
                 if (fs.Length > 0)
-                    items.AddRange(fs.Select(file => new DirectoryItem { FullPath = file, Type = DirectoryItemType.File }));
+                    items.AddRange(fs.Select(file => new DirectoryItem { FullPath = file, Type = DirectoryItemType.File}));
             }
             catch { }
 
