@@ -11,124 +11,139 @@
     Height="720"
     mc:Ignorable="d">
 
-  <Grid>
+    <Grid>
 
-    <Grid.ColumnDefinitions>
-      <ColumnDefinition Width="*" />
-      <ColumnDefinition Width="auto" />
-      <ColumnDefinition Width="2.5*" />
-    </Grid.ColumnDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="auto" />
+            <ColumnDefinition Width="2.5*" />
+        </Grid.ColumnDefinitions>
 
-    <Grid VerticalAlignment="Stretch">
-      <Grid.RowDefinitions>
-        <RowDefinition Height="auto" />
-        <RowDefinition Height="*" />
-      </Grid.RowDefinitions>
+        <Grid VerticalAlignment="Stretch">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
 
-      <Label
-          Grid.Row="0"
-          Height="26"
-          BorderThickness="0"
-          Content="Browser" />
+            <Label
+                Grid.Row="0"
+                Height="26"
+                BorderThickness="0"
+                Content="Browser" />
 
-      <TreeView
-          x:Name="FolderView"
-          Grid.Row="1"
-          Background="#eee"
-          BorderBrush="Transparent"
-          ItemsSource="{Binding Items}"
-          SelectedItemChanged="FolderView_SelectedItemChanged">
+            <TreeView
+                x:Name="FolderView"
+                Grid.Row="1"
+                Background="#eee"
+                BorderBrush="Transparent"
+                ItemsSource="{Binding Items}"
+                SelectedItemChanged="FolderView_SelectedItemChanged">
 
-        <TreeView.ItemContainerStyle>
-          <Style TargetType="{x:Type TreeViewItem}">
+                <TreeView.ItemContainerStyle>
+                    <Style TargetType="{x:Type TreeViewItem}">
 
-            <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
-            <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}" />
-          </Style>
-        </TreeView.ItemContainerStyle>
+                        <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
+                        <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}" />
+                    </Style>
+                </TreeView.ItemContainerStyle>
 
-        <TreeView.ItemTemplate>
-          <HierarchicalDataTemplate ItemsSource="{Binding Folders}">
+                <TreeView.ItemTemplate>
+                    <HierarchicalDataTemplate ItemsSource="{Binding Folders}">
+                        <StackPanel Orientation="Horizontal">
+                            <Image
+                                Width="20"
+                                Margin="3"
+                                Source="{Binding ImageName, Converter={x:Static fview:HeaderToImageConverter.Instance}}" />
+                            <TextBlock VerticalAlignment="Center" Text="{Binding Name}" />
+                        </StackPanel>
+                    </HierarchicalDataTemplate>
+                </TreeView.ItemTemplate>
+
+            </TreeView>
+
+        </Grid>
+
+        <GridSplitter
+            Grid.Column="1"
+            Width="4"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Stretch"
+            Background="#FFC3C3C3"
+            BorderBrush="Transparent"
+            BorderThickness="0" />
+
+
+        <Grid
+            Grid.Row="0"
+            Grid.Column="2"
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Stretch">
+
+            <Grid.RowDefinitions>
+                <RowDefinition Height="26" />
+                <RowDefinition Height="2*" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
             <StackPanel Orientation="Horizontal">
-              <Image
-                  Width="20"
-                  Margin="3"
-                  Source="{Binding ImageName, Converter={x:Static fview:HeaderToImageConverter.Instance}}" />
-              <TextBlock VerticalAlignment="Center" Text="{Binding Name}" />
+                <Button Content="button 1" />
+                <Button Content="button 1" />
+                <Button Click="Delete_Click" Content="Delete" />
             </StackPanel>
-          </HierarchicalDataTemplate>
-        </TreeView.ItemTemplate>
 
-      </TreeView>
+            <Grid />
+            <TextBlock
+                x:Name="ListEmptyLabel"
+                Grid.Row="1"
+                Margin="4"
+                Text="No replays in selected folder." />
+
+            <ListView x:Name="fileList" Grid.Row="1">
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="{Binding Name}" />
+                        </StackPanel>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+
+            <StackPanel
+                Grid.Row="1"
+                Grid.Column="1"
+                VerticalAlignment="Center"
+                Orientation="Vertical">
+                <Button
+                    Margin="4"
+                    Content="&gt;"
+                    ToolTip="Add to RL replays" />
+                <Button
+                    Margin="4"
+                    Click="Delete_Click"
+                    Content="DELETE" />
+            </StackPanel>
+
+
+            <ListView
+                x:Name="currentFileList"
+                Grid.Row="1"
+                Grid.Column="2"
+                HorizontalContentAlignment="Stretch"
+                Style="{StaticResource ListWithTools}">
+
+
+            </ListView>
+
+            <Grid Grid.Row="2" Background="#eee" />
+
+        </Grid>
 
     </Grid>
-
-    <GridSplitter
-        Grid.Column="1"
-        Width="4"
-        HorizontalAlignment="Center"
-        VerticalAlignment="Stretch"
-        Background="#FFC3C3C3"
-        BorderBrush="Transparent"
-        BorderThickness="0" />
-
-    <Grid
-        Grid.Row="0"
-        Grid.Column="2"
-        HorizontalAlignment="Stretch"
-        VerticalAlignment="Stretch">
-      
-      <Grid.RowDefinitions>
-        <RowDefinition Height="26" />
-        <RowDefinition Height="2*" />
-        <RowDefinition Height="*" />
-      </Grid.RowDefinitions>
-
-      <Grid.ColumnDefinitions>
-        <ColumnDefinition Width="*"/>
-        <ColumnDefinition Width="30"/>
-        <ColumnDefinition Width="*"/>
-      </Grid.ColumnDefinitions>
-
-      <StackPanel Orientation="Horizontal">
-        <Button Content="button 1" />
-        <Button Content="button 1" />
-        <Button Content="button 1" />
-      </StackPanel>
-
-      <Grid />
-      <TextBlock x:Name="ListEmptyLabel" Grid.Row="1" Text="No replays in selected folder." Margin="4"/>
-
-      <ListView x:Name="fileList" Grid.Row="1">
-        <ListView.ItemTemplate>
-          <DataTemplate>
-            <StackPanel Orientation="Horizontal">
-              <TextBlock Text="{Binding Name}" />
-            </StackPanel>
-          </DataTemplate>
-        </ListView.ItemTemplate>
-      </ListView>
-
-      <StackPanel Orientation="Vertical" Grid.Row="1" Grid.Column="1" VerticalAlignment="Center" >
-        <Button Content="button 1" Margin="4"/>
-        <Button Content="button 1" Margin="4"/>
-        <Button Content="button 1" Margin="4"/>
-      </StackPanel>
-      
-      <ListView x:Name="currentFileList" Grid.Row="1" Grid.Column="2">
-        <ListView.ItemTemplate>
-          <DataTemplate>
-            <StackPanel Orientation="Horizontal">
-              <TextBlock Text="{Binding Name}" />
-            </StackPanel>
-          </DataTemplate>
-        </ListView.ItemTemplate>
-      </ListView>
-
-      <Grid Grid.Row="2" Background="#eee" />
-
-    </Grid>
-
-  </Grid>
 
 </Window>

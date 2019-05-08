@@ -10,7 +10,7 @@ namespace RLReplayMan
     /// </summary>
     public partial class MainWindow : Window
     {
-        public string RLReplayPath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+        public string RLReplayPath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + "\\Documents\\My Games\\Rocket League\\TAGame\\Demos";
         public List<DirectoryItem> CurrentReplayList;
 
         public MainWindow()
@@ -43,5 +43,9 @@ namespace RLReplayMan
             }
         }
 
+        private void Delete_Click(object sender, RoutedEventArgs e)
+        {
+            FileHelper.DeleteFile("");
+        }
     }
 }
