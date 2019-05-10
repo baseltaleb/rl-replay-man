@@ -34,5 +34,25 @@ namespace RLReplayMan
                 return false;
             }
         }
+
+        public static bool CopyFile(string fileName, string originalPath, string destinationPath)
+        {
+            try
+            {
+                var dest = Path.Combine(destinationPath, fileName);
+                File.Copy(originalPath, dest);
+                return true;
+            }
+            catch (Exception e)
+            {
+                MessageBoxResult result = MessageBox.Show(
+                    "File copy faild: " + e.Message,
+                    "Error",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+
+                return false;
+            }
+        }
     }
 }
