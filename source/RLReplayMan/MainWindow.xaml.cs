@@ -1,6 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.ObjectModel;
 using System.Windows;
+using System.Windows.Controls;
 using WpfTreeView;
 
 namespace RLReplayMan
@@ -10,42 +10,64 @@ namespace RLReplayMan
     /// </summary>
     public partial class MainWindow : Window
     {
-        public string RLReplayPath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + "\\Documents\\My Games\\Rocket League\\TAGame\\Demos";
-        public List<DirectoryItem> CurrentReplayList;
+        private DirectoryStructureViewModel FileBrowserViewModel;
+        private DirectoryItemViewModel SelectedFiles;
 
+        //TODO handle multi file selection.
         public MainWindow()
         {
             InitializeComponent();
-            var ds = new DirectoryStructureViewModel();
-            this.DataContext = ds;
-            CurrentReplayList = DirectoryStructure.GetDirectoryFiles(RLReplayPath, "*.replay");
-            currentFileList.ItemsSource = CurrentReplayList;
-        }
-
-        private void FolderView_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
-        {
-
-            if (DirectoryStructureViewModel.SelectedItem != null)
-            {
-                var selected = (DirectoryItemViewModel)FolderView.SelectedItem;
-                fileList.ItemsSource = DirectoryStructure.GetDirectoryFiles(selected.FullPath, "*.replay");
-                var listHasItems = fileList.Items.Count > 0;
-                if (listHasItems)
-                {
-                    ListEmptyLabel.Visibility = Visibility.Hidden;
-                    fileList.Visibility = Visibility.Visible;
-                }
-                else
-                {
-                    ListEmptyLabel.Visibility = Visibility.Visible;
-                    fileList.Visibility = Visibility.Hidden;
-                }
-            }
+            FileBrowserViewModel = new DirectoryStructureViewModel();
+            this.DataContext = FileBrowserViewModel;
         }
 
         private void Delete_Click(object sender, RoutedEventArgs e)
         {
-            FileHelper.DeleteFile("");
+
+            var selectedItemViewModel = GetSelectedListView().ItemsSource as ObservableCollection<DirectoryItemViewModel>;
+            var success = FileBrowserViewModel.RemoveItems(SelectedFiles, selectedItemViewModel);
+            //if (success)
+            //    FileHelper.DeleteFile(SelectedFiles.FullPath);
+        }
+
+
+        private void ListItemClicked(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            if (!(sender is ListView))
+                return;
+
+            var listView = sender as ListView;
+
+            if (listView == fileList)
+                currentFileList.UnselectAll();
+            else
+                fileList.UnselectAll();
+
+            if (listView.SelectedItem is DirectoryItemViewModel)
+                SelectedFiles = listView.SelectedItem as DirectoryItemViewModel;
+
+            else if (listView.SelectedItem is DirectoryItem)
+            {
+                var file = listView.SelectedItem as DirectoryItem;
+                SelectedFiles = new DirectoryItemViewModel(file.FullPath, file.Type);
+            }
+
+        }
+
+        private void Copy_Click(object sender, RoutedEventArgs e)
+        {
+            FileHelper.CopyFile(
+                SelectedFiles.Name,
+                SelectedFiles.FullPath,
+                FileBrowserViewModel.ReplayDirectoryViewModel.RLReplayPath);
+        }
+
+        private ListView GetSelectedListView()
+        {
+            if (fileList.SelectedItems.Count > 0)
+                return fileList;
+            else
+                return currentFileList;
         }
     }
 }

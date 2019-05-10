@@ -11,6 +11,10 @@
     Height="720"
     mc:Ignorable="d">
 
+    <Window.Resources>
+        <local:IsGreaterThanZero x:Key="isGreaterThanZero" />
+    </Window.Resources>
+
     <Grid>
 
         <Grid.ColumnDefinitions>
@@ -36,8 +40,7 @@
                 Grid.Row="1"
                 Background="#eee"
                 BorderBrush="Transparent"
-                ItemsSource="{Binding Items}"
-                SelectedItemChanged="FolderView_SelectedItemChanged">
+                ItemsSource="{Binding Items}">
 
                 <TreeView.ItemContainerStyle>
                     <Style TargetType="{x:Type TreeViewItem}">
@@ -98,13 +101,13 @@
             </StackPanel>
 
             <Grid />
-            <TextBlock
-                x:Name="ListEmptyLabel"
-                Grid.Row="1"
-                Margin="4"
-                Text="No replays in selected folder." />
 
-            <ListView x:Name="fileList" Grid.Row="1">
+
+            <ListView
+                x:Name="fileList"
+                Grid.Row="1"
+                ItemsSource="{Binding ElementName=FolderView, Path=SelectedItem.Files}"
+                PreviewMouseUp="ListItemClicked">
                 <ListView.ItemTemplate>
                     <DataTemplate>
                         <StackPanel Orientation="Horizontal">
@@ -114,6 +117,22 @@
                 </ListView.ItemTemplate>
             </ListView>
 
+            <TextBlock
+                x:Name="ListEmptyLabel"
+                Grid.Row="1"
+                Margin="4"
+                Text="No replays in selected folder.">
+                <TextBlock.Style>
+                    <Style TargetType="TextBlock">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding ElementName=fileList, Converter={StaticResource isGreaterThanZero}, Path=Items.Count}" Value="True">
+                                <Setter Property="Visibility" Value="Hidden" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </TextBlock.Style>
+            </TextBlock>
+
             <StackPanel
                 Grid.Row="1"
                 Grid.Column="1"
@@ -121,6 +140,7 @@
                 Orientation="Vertical">
                 <Button
                     Margin="4"
+                    Click="Copy_Click"
                     Content="&gt;"
                     ToolTip="Add to RL replays" />
                 <Button
@@ -135,10 +155,9 @@
                 Grid.Row="1"
                 Grid.Column="2"
                 HorizontalContentAlignment="Stretch"
-                Style="{StaticResource ListWithTools}">
-
-
-            </ListView>
+                ItemsSource="{Binding ReplayDirectoryViewModel.ReplayFiles}"
+                PreviewMouseUp="ListItemClicked"
+                Style="{StaticResource ListWithTools}" />
 
             <Grid Grid.Row="2" Background="#eee" />
 
