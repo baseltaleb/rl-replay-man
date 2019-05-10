@@ -68,6 +68,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Helpers\FileHelper.cs" />
+    <Compile Include="Helpers\GridViewSort.cs" />
     <Compile Include="Helpers\IsGreaterThanZero.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
@@ -105,6 +106,12 @@
       <Project>{8a071e7e-f10d-4ab4-b6ef-9069d8d0b2f4}</Project>
       <Name>WpfTreeView</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\down_arrow.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\up_arrow.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

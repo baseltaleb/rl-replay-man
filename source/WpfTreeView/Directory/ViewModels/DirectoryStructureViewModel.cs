@@ -1,4 +1,5 @@
-﻿using System.Collections.ObjectModel;
+﻿using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 
 namespace WpfTreeView
@@ -39,16 +40,19 @@ namespace WpfTreeView
 
         #endregion
 
-        public bool RemoveItems(DirectoryItemViewModel item, ObservableCollection<DirectoryItemViewModel> itemList)
+        public void RemoveItems(List<DirectoryItemViewModel> items, ObservableCollection<DirectoryItemViewModel> itemList)
         {
-
-            if (itemList.Contains(item))
+            foreach (var item in items)
             {
-                itemList.Remove(item);
-                return true;
+                if (itemList.Contains(item))
+                    itemList.Remove(item);
             }
-            else
-                return false;
+
+        }
+        public void RemoveItem(DirectoryItemViewModel item, ObservableCollection<DirectoryItemViewModel> itemList)
+        {
+            if (itemList.Contains(item))
+                itemList.Remove(item);
         }
     }
 }

@@ -1,6 +1,10 @@
-﻿using System.Collections.ObjectModel;
+﻿using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using WpfTreeView;
 
 namespace RLReplayMan
@@ -11,9 +15,8 @@ namespace RLReplayMan
     public partial class MainWindow : Window
     {
         private DirectoryStructureViewModel FileBrowserViewModel;
-        private DirectoryItemViewModel SelectedFiles;
+        private List<DirectoryItemViewModel> SelectedFiles;
 
-        //TODO handle multi file selection.
         public MainWindow()
         {
             InitializeComponent();
@@ -23,13 +26,23 @@ namespace RLReplayMan
 
         private void Delete_Click(object sender, RoutedEventArgs e)
         {
+            MessageBoxResult result = MessageBox.Show(
+                string.Format("Are you sure you want to delete the selected {0} files? ", SelectedFiles.Count),
+                "Delete",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Question);
+
+            if (result == MessageBoxResult.No)
+                return;
 
             var selectedItemViewModel = GetSelectedListView().ItemsSource as ObservableCollection<DirectoryItemViewModel>;
-            var success = FileBrowserViewModel.RemoveItems(SelectedFiles, selectedItemViewModel);
-            //if (success)
-            //    FileHelper.DeleteFile(SelectedFiles.FullPath);
+            foreach (var file in SelectedFiles)
+            {
+                var success = FileHelper.DeleteFile(file.FullPath, false);
+                if (success)
+                    FileBrowserViewModel.RemoveItem(file, selectedItemViewModel);
+            }
         }
-
 
         private void ListItemClicked(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
@@ -43,23 +56,24 @@ namespace RLReplayMan
             else
                 fileList.UnselectAll();
 
-            if (listView.SelectedItem is DirectoryItemViewModel)
-                SelectedFiles = listView.SelectedItem as DirectoryItemViewModel;
-
-            else if (listView.SelectedItem is DirectoryItem)
-            {
-                var file = listView.SelectedItem as DirectoryItem;
-                SelectedFiles = new DirectoryItemViewModel(file.FullPath, file.Type);
-            }
-
+            SelectedFiles = listView.SelectedItems.Cast<DirectoryItemViewModel>().ToList();
         }
 
         private void Copy_Click(object sender, RoutedEventArgs e)
         {
-            FileHelper.CopyFile(
-                SelectedFiles.Name,
-                SelectedFiles.FullPath,
-                FileBrowserViewModel.ReplayDirectoryViewModel.RLReplayPath);
+            foreach (var file in SelectedFiles)
+            {
+                var result = FileHelper.CopyFile(
+                    file.Name,
+                    file.FullPath,
+                    FileBrowserViewModel.ReplayDirectoryViewModel.RLReplayPath);
+                if (result != null)
+                    FileBrowserViewModel.ReplayDirectoryViewModel.AddItem(
+                        new DirectoryItemViewModel(result, DirectoryItemType.File));
+            }
+
+            SortListBy(currentFileList.ItemsSource, "Name");
+
         }
 
         private ListView GetSelectedListView()
@@ -68,6 +82,18 @@ namespace RLReplayMan
                 return fileList;
             else
                 return currentFileList;
+        }
+
+        private void SortListBy(System.Collections.IEnumerable list, string columnName)
+        {
+            CollectionView view = (CollectionView)CollectionViewSource.GetDefaultView(list);
+            view.SortDescriptions.Add(new SortDescription(columnName, ListSortDirection.Ascending));
+        }
+
+        private void ListHeaderClicked(object sender, RoutedEventArgs e)
+        {
+            GridViewColumnHeader column = sender as GridViewColumnHeader;
+
         }
     }
 }
