@@ -6,8 +6,9 @@
     xmlns:fview="clr-namespace:WpfTreeView;assembly=WpfTreeView"
     xmlns:local="clr-namespace:RLReplayMan"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:util="clr-namespace:Wpf.Util"
     Title="MainWindow"
-    Width="1024"
+    Width="1500"
     Height="720"
     mc:Ignorable="d">
 
@@ -155,9 +156,30 @@
                 Grid.Row="1"
                 Grid.Column="2"
                 HorizontalContentAlignment="Stretch"
+                util:GridViewSort.AutoSort="True"
+                util:GridViewSort.SortGlyphAscending="/Images/up_arrow.ico"
+                util:GridViewSort.SortGlyphDescending="/Images/down_arrow.ico"
+                IsSynchronizedWithCurrentItem="True"
                 ItemsSource="{Binding ReplayDirectoryViewModel.ReplayFiles}"
                 PreviewMouseUp="ListItemClicked"
-                Style="{StaticResource ListWithTools}" />
+                Style="{StaticResource ListWithTools}">
+
+                <ListView.View>
+                    <GridView>
+                        <GridViewColumn
+                            Width="Auto"
+                            util:GridViewSort.PropertyName="Name"
+                            DisplayMemberBinding="{Binding Name}"
+                            Header="File name" />
+                        <GridViewColumn
+                            Width="Auto"
+                            util:GridViewSort.PropertyName="FirstName"
+                            DisplayMemberBinding="{Binding FirstName}"
+                            Header="Other" />
+                    </GridView>
+                </ListView.View>
+
+            </ListView>
 
             <Grid Grid.Row="2" Background="#eee" />
 
