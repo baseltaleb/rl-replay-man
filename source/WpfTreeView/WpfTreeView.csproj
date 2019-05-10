@@ -76,6 +76,7 @@
     <Compile Include="Directory\ViewModels\DirectoryItemViewModel.cs" />
     <Compile Include="Directory\ViewModels\Base\RelayCommand.cs" />
     <Compile Include="Directory\ViewModels\DirectoryStructureViewModel.cs" />
+    <Compile Include="Directory\ViewModels\ReplayDirectoryViewModel.cs" />
     <Compile Include="HeaderToImageConverter.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
