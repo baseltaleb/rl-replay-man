@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows.Input;
 
@@ -64,23 +63,23 @@ namespace WpfTreeView
             }
         }
 
-        //private bool mIsSelected = false;
+        private bool mIsSelected = false;
 
-        //public bool IsSelected
-        //{
-        //    get
-        //    {
-        //        return mIsSelected;
-        //    }
-        //    set
-        //    {
-        //        // If the UI tells us to expand...
-        //        if (value == true)
-        //            Click();
+        public bool IsSelected
+        {
+            get
+            {
+                return mIsSelected;
+            }
+            set
+            {
+                // If the UI tells us to expand...
+                if (value == true)
+                    Click();
 
-        //        IsSelected = value;
-        //    }
-        //}
+                mIsSelected = value;
+            }
+        }
         #endregion
 
         #region Public Commands
@@ -147,22 +146,30 @@ namespace WpfTreeView
             var children = DirectoryStructure.GetDirectoryContents(this.FullPath);
             this.Folders = new ObservableCollection<DirectoryItemViewModel>(
                                 children.Select(content => new DirectoryItemViewModel(content.FullPath, content.Type)));
-            DirectoryStructureViewModel.SelectedItem = this;
-            Click();
+            DirectoryStructureViewModel.SelectedFolder = this;
+            ReloadFiles();
         }
 
         private void Click()
         {
-            var dirContent = DirectoryStructure.GetDirectoryContents(this.FullPath);
-            var children = new List<DirectoryItem>();
+            ReloadFiles();
+        }
 
-            foreach (var child in dirContent)
-            {
-                if (child.Type == DirectoryItemType.File)
-                    children.Add(child);
-            }
+        public void ReloadFiles()
+        {
+            var children = DirectoryStructure.GetDirectoryFiles(this.FullPath);
             this.Files = new ObservableCollection<DirectoryItemViewModel>(
                                 children.Select(content => new DirectoryItemViewModel(content.FullPath, content.Type)));
         }
+
+        public void RemoveItem(string itemPath)
+        {
+            foreach (var item in Files)
+            {
+                if (item.FullPath.Equals(itemPath))
+                    Files.Remove(item);
+            }
+        }
+
     }
 }
