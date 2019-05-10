@@ -14,7 +14,10 @@ namespace WpfTreeView
         /// A list of all directories on the machine
         /// </summary>
         public ObservableCollection<DirectoryItemViewModel> Items { get; set; }
-        public static DirectoryItemViewModel SelectedItem { get; set; }
+        public ReplayDirectoryViewModel ReplayDirectoryViewModel { get; set; }
+
+        public static DirectoryItemViewModel SelectedFolder { get; set; }
+
         #endregion
 
         #region Constructor
@@ -31,8 +34,21 @@ namespace WpfTreeView
             this.Items = new ObservableCollection<DirectoryItemViewModel>(
                 children.Select(drive => new DirectoryItemViewModel(drive.FullPath, DirectoryItemType.Drive)));
 
+            ReplayDirectoryViewModel = new ReplayDirectoryViewModel();
         }
 
         #endregion
+
+        public bool RemoveItems(DirectoryItemViewModel item, ObservableCollection<DirectoryItemViewModel> itemList)
+        {
+
+            if (itemList.Contains(item))
+            {
+                itemList.Remove(item);
+                return true;
+            }
+            else
+                return false;
+        }
     }
 }
