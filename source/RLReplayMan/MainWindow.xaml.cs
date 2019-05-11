@@ -1,10 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
 using WpfTreeView;
 
 namespace RLReplayMan
@@ -72,8 +70,6 @@ namespace RLReplayMan
                         new DirectoryItemViewModel(result, DirectoryItemType.File));
             }
 
-            SortListBy(currentFileList.ItemsSource, "Name");
-
         }
 
         private ListView GetSelectedListView()
@@ -84,16 +80,21 @@ namespace RLReplayMan
                 return currentFileList;
         }
 
-        private void SortListBy(System.Collections.IEnumerable list, string columnName)
+        private void Grid_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
-            CollectionView view = (CollectionView)CollectionViewSource.GetDefaultView(list);
-            view.SortDescriptions.Add(new SortDescription(columnName, ListSortDirection.Ascending));
+            var grid = sender as Grid;
+            grid.Width = FolderView.ActualWidth;
+
+            Point relativePoint = grid.TransformToAncestor(FolderView)
+                              .Transform(new Point(0, 0));
+            grid.LayoutTransform.Value.Translate(40, 0);
+            grid.RenderTransform.TryTransform(relativePoint, out relativePoint);
         }
 
-        private void ListHeaderClicked(object sender, RoutedEventArgs e)
+        private void TreeViewItem_RequestBringIntoView(object sender, RequestBringIntoViewEventArgs e)
         {
-            GridViewColumnHeader column = sender as GridViewColumnHeader;
-
+            e.Handled = true;
         }
+
     }
 }
