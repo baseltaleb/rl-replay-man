@@ -1,7 +1,4 @@
-﻿using System.Collections.Generic;
-using System.IO;
-using System.Windows;
-using System.Windows.Controls;
+﻿using System.Windows;
 
 namespace WpfTreeView
 {
@@ -19,7 +16,7 @@ namespace WpfTreeView
         {
             InitializeComponent();
 
-            this.DataContext = new DirectoryStructureViewModel();
+            this.DataContext = new DirectoryStructureViewModel(null);
         }
 
         #endregion

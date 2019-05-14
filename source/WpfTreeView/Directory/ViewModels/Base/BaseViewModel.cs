@@ -13,5 +13,9 @@ namespace WpfTreeView
         /// The event that is fired when any child property changes its value
         /// </summary>
         public event PropertyChangedEventHandler PropertyChanged = (sender, e) => { };
+
+        public string FullPath { get; set; }
+
+        public bool IsHighlighted { get; set; }
     }
 }

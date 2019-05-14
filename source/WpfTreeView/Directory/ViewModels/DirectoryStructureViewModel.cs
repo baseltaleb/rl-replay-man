@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Linq;
 
 namespace WpfTreeView
@@ -17,7 +18,7 @@ namespace WpfTreeView
         public ObservableCollection<DirectoryItemViewModel> Items { get; set; }
         public ReplayDirectoryViewModel ReplayDirectoryViewModel { get; set; }
 
-        public static DirectoryItemViewModel SelectedFolder { get; set; }
+        public DirectoryItemViewModel SelectedFolder { get; set; }
 
         #endregion
 
@@ -26,15 +27,14 @@ namespace WpfTreeView
         /// <summary>
         /// Default constructor
         /// </summary>
-        public DirectoryStructureViewModel()
+        public DirectoryStructureViewModel(StringCollection bookmarks)
         {
             // Get the logical drives
             var children = DirectoryStructure.GetLogicalDrives();
 
             // Create the view models from the data
             this.Items = new ObservableCollection<DirectoryItemViewModel>(
-                children.Select(drive => new DirectoryItemViewModel(drive.FullPath, DirectoryItemType.Drive)));
-
+                children.Select(drive => new DirectoryItemViewModel(drive.FullPath, DirectoryItemType.Drive, 0, bookmarks)));
             ReplayDirectoryViewModel = new ReplayDirectoryViewModel();
         }
 

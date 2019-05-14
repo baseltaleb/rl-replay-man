@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Windows.Input;
 
@@ -16,17 +17,25 @@ namespace WpfTreeView
         /// </summary>
         public DirectoryItemType Type { get; set; }
 
-        public string ImageName => Type == DirectoryItemType.Drive ? "drive" : (Type == DirectoryItemType.File ? "file" : (IsExpanded ? "folder-open" : "folder-closed"));
+        //public string ImageName => Type == DirectoryItemType.Drive ? "drive" : (Type == DirectoryItemType.File ? "file" : (IsExpanded ? "folder-open" : "folder-closed"));
 
-        /// <summary>
-        /// The full path to the item
-        /// </summary>
-        public string FullPath { get; set; }
+        public string ImageName
+        {
+            get
+            {
+                var result = Type == DirectoryItemType.Drive ? "drive" : (Type == DirectoryItemType.File ? "file" : (IsExpanded ? "folder-open" : "folder-closed"));
+                if (IsBookmarked && Type == DirectoryItemType.Folder)
+                    result += "_bookmarked";
+                return result;
+            }
+        }
 
         /// <summary>
         /// The name of this directory item
         /// </summary>
         public string Name { get { return this.Type == DirectoryItemType.Drive ? this.FullPath : DirectoryStructure.GetFileFolderName(this.FullPath); } }
+
+        public long FileLength { get; set; }
 
         /// <summary>
         /// A list of all children contained inside this item
@@ -40,6 +49,7 @@ namespace WpfTreeView
         /// </summary>
         public bool CanExpand { get { return this.Type != DirectoryItemType.File; } }
 
+        public bool IsBookmarked { get; set; }
         /// <summary>
         /// Indicates if the current item is expanded or not
         /// </summary>
@@ -80,6 +90,8 @@ namespace WpfTreeView
                 mIsSelected = value;
             }
         }
+
+        private StringCollection Bookmarks;
         #endregion
 
         #region Public Commands
@@ -100,20 +112,23 @@ namespace WpfTreeView
         /// </summary>
         /// <param name="fullPath">The full path of this item</param>
         /// <param name="type">The type of item</param>
-        public DirectoryItemViewModel(string fullPath, DirectoryItemType type)
+        public DirectoryItemViewModel(string fullPath, DirectoryItemType type, long fileLength, StringCollection bookmarks)
         {
             // Create commands
             this.ExpandCommand = new RelayCommand(Expand);
             this.ClickCommand = new RelayCommand(Click);
-
+            Bookmarks = bookmarks;
             // Set path and type
             this.FullPath = fullPath;
             this.Type = type;
-
+            this.FileLength = fileLength;
+            if (bookmarks != null)
+                IsBookmarked = bookmarks.Contains(FullPath);
             // Setup the children as needed
             this.ClearChildren();
         }
 
+        public DirectoryItemViewModel() { }
         #endregion
 
         #region Helper Methods
@@ -145,8 +160,7 @@ namespace WpfTreeView
             // Find all children
             var children = DirectoryStructure.GetDirectoryContents(this.FullPath);
             this.Folders = new ObservableCollection<DirectoryItemViewModel>(
-                                children.Select(content => new DirectoryItemViewModel(content.FullPath, content.Type)));
-            DirectoryStructureViewModel.SelectedFolder = this;
+                                children.Select(content => new DirectoryItemViewModel(content.FullPath, content.Type, 0, Bookmarks)));
             ReloadFiles();
         }
 
@@ -159,7 +173,7 @@ namespace WpfTreeView
         {
             var children = DirectoryStructure.GetDirectoryFiles(this.FullPath);
             this.Files = new ObservableCollection<DirectoryItemViewModel>(
-                                children.Select(content => new DirectoryItemViewModel(content.FullPath, content.Type)));
+                                children.Select(content => new DirectoryItemViewModel(content.FullPath, content.Type, content.FileLength, Bookmarks)));
         }
 
         public void RemoveItem(string itemPath)
@@ -169,6 +183,14 @@ namespace WpfTreeView
                 if (item.FullPath.Equals(itemPath))
                     Files.Remove(item);
             }
+        }
+
+        public bool Equals(BaseViewModel other)
+        {
+            if (other.FullPath.Equals(FullPath))
+                return true;
+
+            return false;
         }
 
     }

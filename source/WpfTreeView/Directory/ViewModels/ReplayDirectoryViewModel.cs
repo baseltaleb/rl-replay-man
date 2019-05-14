@@ -8,20 +8,30 @@ namespace WpfTreeView
     {
         public ObservableCollection<DirectoryItemViewModel> ReplayFiles { get; set; }
 
-        public string RLReplayPath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + "\\Documents\\My Games\\Rocket League\\TAGame\\Demos";
+        public new string FullPath
+        {
+            get
+            {
+                return Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) +
+                    "\\Documents\\My Games\\Rocket League\\TAGame\\Demos"; ;
+            }
+        }
+
         public string ReplayFilePattern = "*.replay";
+
+        public bool HasMatch { get; set; }
 
         public ReplayDirectoryViewModel()
         {
-            RefreshFileList();
+            ReloadFiles();
         }
 
-        public void RefreshFileList()
+        public void ReloadFiles()
         {
-            var children = DirectoryStructure.GetDirectoryFiles(RLReplayPath, ReplayFilePattern);
+            var children = DirectoryStructure.GetDirectoryFiles(FullPath, ReplayFilePattern);
 
             ReplayFiles = new ObservableCollection<DirectoryItemViewModel>(
-                children.Select(replay => new DirectoryItemViewModel(replay.FullPath, DirectoryItemType.File)));
+                children.Select(replay => new DirectoryItemViewModel(replay.FullPath, DirectoryItemType.File, replay.FileLength, null)));
         }
 
         public void AddItem(DirectoryItemViewModel item)

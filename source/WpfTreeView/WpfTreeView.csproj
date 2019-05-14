@@ -117,6 +117,12 @@
     <Reference Include="System.Xml.Linq" />
     <Reference Include="WindowsBase" />
   </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\folder-closed_bookmarked.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\folder-open_bookmarked.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="packages\Fody.4.2.1\build\Fody.targets" Condition="Exists('packages\Fody.4.2.1\build\Fody.targets')" />
   <Import Project="..\RLReplayMan\packages\Fody.4.2.1\build\Fody.targets" Condition="Exists('..\RLReplayMan\packages\Fody.4.2.1\build\Fody.targets')" />

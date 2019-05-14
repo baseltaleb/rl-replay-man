@@ -62,7 +62,12 @@ namespace WpfTreeView
                 var fs = Directory.GetFiles(fullPath, searchPattern);
 
                 if (fs.Length > 0)
-                    items.AddRange(fs.Select(file => new DirectoryItem { FullPath = file, Type = DirectoryItemType.File}));
+                    items.AddRange(fs.Select(file => new DirectoryItem
+                    {
+                        FullPath = file,
+                        Type = DirectoryItemType.File,
+                        FileLength = new FileInfo(file).Length
+                    }));
             }
             catch { }
 

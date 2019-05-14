@@ -8,115 +8,157 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:util="clr-namespace:Wpf.Util"
     Title="MainWindow"
-    Width="1500"
+    Width="1250"
     Height="720"
     mc:Ignorable="d">
 
     <Window.Resources>
         <local:IsGreaterThanZero x:Key="isGreaterThanZero" />
+        <fview:DirectoryItemViewModel x:Key="SelectedFolder" />
     </Window.Resources>
-
 
     <Grid>
 
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="240" />
             <ColumnDefinition Width="auto" />
             <ColumnDefinition Width="2.5*" />
         </Grid.ColumnDefinitions>
 
-        <Grid VerticalAlignment="Stretch">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="auto" />
-                <RowDefinition Height="*" />
-            </Grid.RowDefinitions>
-
-            <Label
+        <!--  Left browser panel  -->
+        <Grid Background="#eee">
+            <TabControl
+                x:Name="tabControl"
                 Grid.Row="0"
-                Height="26"
-                BorderThickness="0"
-                Content="Browser" />
+                Margin="0,6">
 
-            <local:StretchingTreeView
-                x:Name="FolderView"
-                Grid.Row="1"
-                HorizontalAlignment="Stretch"
-                Background="#eee"
-                BorderBrush="Transparent"
-                ItemsSource="{Binding Items}">
-
-                <TreeView.Resources>
-                    <!--  Style the inactive selection the same as active  -->
-                    <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightBrushKey}" Color="{DynamicResource {x:Static SystemColors.HighlightColorKey}}" />
-                    <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightTextBrushKey}" Color="{DynamicResource {x:Static SystemColors.HighlightTextColorKey}}" />
-                </TreeView.Resources>
-
-                <TreeView.ItemContainerStyle>
-                    <Style TargetType="{x:Type TreeViewItem}">
-
-                        <Style.Resources>
-                            <SolidColorBrush x:Key="{x:Static SystemColors.ControlBrushKey}" Color="#FF3399FF" />
-                        </Style.Resources>
-
-                        <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
-                        <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}" />
-                        <EventSetter Event="RequestBringIntoView" Handler="TreeViewItem_RequestBringIntoView" />
+                <TabControl.Resources>
+                    <Style TargetType="{x:Type TabPanel}">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding SelectedIndex, RelativeSource={RelativeSource AncestorType=TabControl}}" Value="1" />
+                        </Style.Triggers>
                     </Style>
-                </TreeView.ItemContainerStyle>
+                </TabControl.Resources>
+                <!--  Browser view  -->
+                <TabItem x:Name="BrowserTabItem" Header="Browser">
 
-                <TreeView.ItemTemplate>
-                    <HierarchicalDataTemplate ItemsSource="{Binding Folders}">
+                    <local:StretchingTreeView
+                        x:Name="FolderView"
+                        Grid.Row="1"
+                        Padding="0,6"
+                        HorizontalAlignment="Stretch"
+                        BorderBrush="Transparent"
+                        BorderThickness="0"
+                        ItemsSource="{Binding Items}">
 
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-                            <Image
-                                Grid.Column="0"
-                                Width="20"
-                                Margin="3"
-                                Source="{Binding ImageName, Converter={x:Static fview:HeaderToImageConverter.Instance}}" />
-                            <TextBlock
-                                Grid.Column="1"
-                                Padding="0,0,100,0"
-                                VerticalAlignment="Center"
-                                Text="{Binding Name}" />
+                        <TreeView.Resources>
+                            <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightBrushKey}" Color="{DynamicResource {x:Static SystemColors.HighlightColorKey}}" />
+                            <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightTextBrushKey}" Color="{DynamicResource {x:Static SystemColors.HighlightTextColorKey}}" />
+                        </TreeView.Resources>
 
-                        </Grid>
+                        <TreeView.ItemContainerStyle>
+                            <Style TargetType="{x:Type TreeViewItem}">
+                                <Style.Resources>
+                                    <SolidColorBrush x:Key="{x:Static SystemColors.ControlBrushKey}" Color="#FF3399FF" />
+                                </Style.Resources>
+                                <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
+                                <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}" />
+                                <EventSetter Event="RequestBringIntoView" Handler="TreeViewItem_RequestBringIntoView" />
+                                <EventSetter Event="Selected" Handler="TreeViewItem_Selected" />
+                            </Style>
+                        </TreeView.ItemContainerStyle>
 
-                        <!--<StackPanel Width="{Binding RelativeSource={RelativeSource AncestorType={x:Type TreeViewItem}}, Path=ActualWidth, Mode=OneTime}" Orientation="Horizontal">
-                            <Image
-                                Width="20"
-                                Margin="3"
-                                Source="{Binding ImageName, Converter={x:Static fview:HeaderToImageConverter.Instance}}" />
-                            <TextBlock VerticalAlignment="Center" Text="{Binding Name}" />
-                        </StackPanel>-->
-                    </HierarchicalDataTemplate>
-                </TreeView.ItemTemplate>
+                        <TreeView.ItemTemplate>
+                            <HierarchicalDataTemplate ItemsSource="{Binding Folders}">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
 
-            </local:StretchingTreeView>
+                                    <Image
+                                        Grid.Column="0"
+                                        Width="20"
+                                        Margin="3"
+                                        Source="{Binding ImageName, Converter={x:Static fview:HeaderToImageConverter.Instance}}" />
+                                    <TextBlock
+                                        Grid.Column="1"
+                                        VerticalAlignment="Center"
+                                        Text="{Binding Name}" />
+
+                                </Grid>
+                            </HierarchicalDataTemplate>
+                        </TreeView.ItemTemplate>
+
+                    </local:StretchingTreeView>
+
+                </TabItem>
+
+                <!--  Bookmarks view  -->
+                <TabItem x:Name="BookmarksTabHeader" Header="Bookmarks">
+
+                    <ListView
+                        x:Name="BookmarksList"
+                        Grid.Row="1"
+                        Padding="0,6"
+                        BorderThickness="0"
+                        IsVisibleChanged="BookmarksList_IsVisibleChanged"
+                        PreviewMouseUp="BookmarksList_PreviewMouseUp">
+                        <ListView.ItemTemplate>
+                            <DataTemplate>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <Image
+                                        Grid.Column="0"
+                                        Width="20"
+                                        Margin="3"
+                                        Source="{Binding ImageName, Converter={x:Static fview:HeaderToImageConverter.Instance}}" />
+                                    <TextBlock
+                                        Grid.Column="1"
+                                        VerticalAlignment="Center"
+                                        Text="{Binding Name}" />
+
+                                </Grid>
+
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+                </TabItem>
+
+            </TabControl>
+
+            <Button
+                x:Name="BookmarkButton"
+                Width="24"
+                Height="24"
+                Margin="0,3,0,0"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Top"
+                Click="BookmarkButton_Click">
+                <Image Source="Images/bookmark.png" />
+            </Button>
 
         </Grid>
 
         <GridSplitter
             Grid.Column="1"
-            Width="4"
-            HorizontalAlignment="Center"
-            VerticalAlignment="Stretch"
-            Background="#FFC3C3C3"
-            BorderBrush="Transparent"
-            BorderThickness="0" />
+            Width="6"
+            HorizontalAlignment="Center" />
 
 
         <Grid
             Grid.Row="0"
             Grid.Column="2"
             HorizontalAlignment="Stretch"
-            VerticalAlignment="Stretch">
+            VerticalAlignment="Stretch"
+            Background="#eee">
 
             <Grid.RowDefinitions>
-                <RowDefinition Height="26" />
+                <RowDefinition Height="auto" />
                 <RowDefinition Height="2*" />
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
@@ -127,33 +169,104 @@
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
 
-            <StackPanel Orientation="Horizontal">
-                <Button x:Name="samplebutton" Content="button 1" />
-                <Button Content="button 1" />
-                <Button Click="Delete_Click" Content="Delete" />
+            <StackPanel>
+                <Label
+                    Height="30"
+                    VerticalAlignment="Center"
+                    Background="LightGray"
+                    Content="{Binding SelectedFolder.FullPath}" />
+                <Label VerticalAlignment="Bottom" Content="Replays in selected folder" />
+
             </StackPanel>
-
-            <Grid />
-
 
             <ListView
                 x:Name="fileList"
                 Grid.Row="1"
-                ItemsSource="{Binding ElementName=FolderView, Path=SelectedItem.Files}"
+                util:GridViewSort.AutoSort="True"
+                util:GridViewSort.SortGlyphAscending="/Images/up_arrow.ico"
+                util:GridViewSort.SortGlyphDescending="/Images/down_arrow.ico"
+                BorderBrush="LightBlue"
+                IsSynchronizedWithCurrentItem="True"
+                ItemsSource="{Binding SelectedFolder.Files}"
                 PreviewMouseUp="ListItemClicked">
                 <ListView.ItemTemplate>
                     <DataTemplate>
                         <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="{Binding Name}" />
+                            <Image
+                                Width="12"
+                                Height="12"
+                                SnapsToDevicePixels="True"
+                                Source="Images/rl_logo_small.png"
+                                UseLayoutRounding="True" />
+                            <TextBlock Margin="6,0" Text="{Binding Name}" />
                         </StackPanel>
                     </DataTemplate>
                 </ListView.ItemTemplate>
+
+                <ListView.View>
+                    <GridView>
+
+                        <GridViewColumn Width="Auto">
+
+                            <GridViewColumnHeader IsEnabled="False" />
+                            <GridViewColumn.CellTemplate>
+
+                                <DataTemplate>
+                                    <StackPanel>
+                                        <Image
+                                            Width="12"
+                                            Height="12"
+                                            SnapsToDevicePixels="True"
+                                            Source="Images/rl_logo_small.png"
+                                            UseLayoutRounding="True" />
+                                    </StackPanel>
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+
+                        <GridViewColumn
+                            Width="Auto"
+                            util:GridViewSort.PropertyName="Name"
+                            Header="File name">
+
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock HorizontalAlignment="Stretch" Text="{Binding Name}">
+
+                                            <TextBlock.Style>
+                                                <Style TargetType="{x:Type TextBlock}">
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsHighlighted}" Value="True">
+                                                            <Setter Property="Foreground" Value="#FFA900E4" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                    </Grid>
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+
+                        </GridViewColumn>
+
+                        <GridViewColumn
+                            Width="Auto"
+                            util:GridViewSort.PropertyName="FirstName"
+                            DisplayMemberBinding="{Binding FirstName}"
+                            Header="Other" />
+                    </GridView>
+                </ListView.View>
             </ListView>
 
             <TextBlock
                 x:Name="ListEmptyLabel"
                 Grid.Row="1"
                 Margin="4"
+                Foreground="Red"
                 Text="No replays in selected folder.">
                 <TextBlock.Style>
                     <Style TargetType="TextBlock">
@@ -166,20 +279,46 @@
                 </TextBlock.Style>
             </TextBlock>
 
+            <StackPanel Grid.Row="0" Grid.Column="1">
+                <Label Height="30" Background="LightGray" />
+                <Label />
+            </StackPanel>
+
             <StackPanel
                 Grid.Row="1"
                 Grid.Column="1"
                 VerticalAlignment="Center"
                 Orientation="Vertical">
                 <Button
+                    Width="24"
+                    Height="24"
                     Margin="4"
                     Click="Copy_Click"
-                    Content="&gt;"
-                    ToolTip="Add to RL replays" />
+                    ToolTip="Add to RL replays">
+                    <Image Source="Images/chevron_right.png" />
+                </Button>
+
                 <Button
+                    Width="24"
+                    Height="24"
                     Margin="4"
-                    Click="Delete_Click"
-                    Content="DELETE" />
+                    Click="Delete_Click">
+                    <Image Source="Images/delete.png" />
+                </Button>
+
+            </StackPanel>
+
+            <StackPanel Grid.Row="0" Grid.Column="2">
+                <Label
+                    Height="30"
+                    VerticalAlignment="Center"
+                    Background="LightGray"
+                    Content="{Binding ReplayDirectoryViewModel.FullPath}" />
+                <Label
+                    Grid.Row="0"
+                    Grid.Column="2"
+                    VerticalAlignment="Bottom"
+                    Content="Current replays" />
             </StackPanel>
 
 
@@ -191,18 +330,61 @@
                 util:GridViewSort.AutoSort="True"
                 util:GridViewSort.SortGlyphAscending="/Images/up_arrow.ico"
                 util:GridViewSort.SortGlyphDescending="/Images/down_arrow.ico"
+                BorderBrush="LightBlue"
                 IsSynchronizedWithCurrentItem="True"
                 ItemsSource="{Binding ReplayDirectoryViewModel.ReplayFiles}"
-                PreviewMouseUp="ListItemClicked"
-                Style="{StaticResource ListWithTools}">
+                PreviewMouseUp="ListItemClicked">
 
                 <ListView.View>
                     <GridView>
+
+                        <GridViewColumn Width="Auto">
+
+                            <GridViewColumnHeader IsEnabled="False" />
+                            <GridViewColumn.CellTemplate>
+
+                                <DataTemplate>
+                                    <StackPanel>
+                                        <Image
+                                            Width="12"
+                                            Height="12"
+                                            SnapsToDevicePixels="True"
+                                            Source="Images/rl_logo_small.png"
+                                            UseLayoutRounding="True" />
+                                    </StackPanel>
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+
                         <GridViewColumn
                             Width="Auto"
                             util:GridViewSort.PropertyName="Name"
-                            DisplayMemberBinding="{Binding Name}"
-                            Header="File name" />
+                            Header="File name">
+
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock HorizontalAlignment="Stretch" Text="{Binding Name}">
+
+                                            <TextBlock.Style>
+                                                <Style TargetType="{x:Type TextBlock}">
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsHighlighted}" Value="True">
+                                                            <Setter Property="Foreground" Value="#FFA900E4" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                    </Grid>
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+
+                        </GridViewColumn>
+
                         <GridViewColumn
                             Width="Auto"
                             util:GridViewSort.PropertyName="FirstName"

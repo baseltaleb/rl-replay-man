@@ -85,6 +85,7 @@
     <Compile Include="Helpers\FileHelper.cs" />
     <Compile Include="Helpers\GridViewSort.cs" />
     <Compile Include="Helpers\IsGreaterThanZero.cs" />
+    <Compile Include="Helpers\PathComparer.cs" />
     <Compile Include="Helpers\StretchingTreeView.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
@@ -143,6 +144,16 @@
       <ProductName>.NET Framework 3.5 SP1</ProductName>
       <Install>false</Install>
     </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\rl_logo_small.png" />
+    <Resource Include="Images\delete.png" />
+    <Resource Include="Images\chevron_left.png" />
+    <Resource Include="Images\chevron_right.png" />
+    <Resource Include="Images\expand_less.png" />
+    <Resource Include="Images\expand_more.png" />
+    <Resource Include="Images\bookmark.png" />
+    <Content Include="Images\bookmark.svg" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Windows;
 
 namespace RLReplayMan
@@ -77,5 +78,21 @@ namespace RLReplayMan
                 return null;
             }
         }
+
+        public static long GetFileLength(string fullPath)
+        {
+            return new FileInfo(fullPath).Length;
+        }
+
+        public static bool AreEqual(string firstPath, string secondPath)
+        {
+            return new FileInfo(firstPath).Length == new FileInfo(secondPath).Length &&
+                File.ReadAllBytes(firstPath).SequenceEqual(File.ReadAllBytes(secondPath));
+        }
+
+        //public static bool AreEqual(string firstPath, string secondPath)
+        //{
+        //    return new FileInfo(firstPath).Length == new FileInfo(secondPath).Length;
+        //}
     }
 }
