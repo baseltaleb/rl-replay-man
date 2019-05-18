@@ -80,8 +80,36 @@ namespace RLReplayMan
 
         private void Copy_Click(object sender, RoutedEventArgs e)
         {
+            bool skipAll = false;
             foreach (var file in SelectedFiles)
             {
+                if (file.IsHighlighted)
+                {
+                    if (skipAll)
+                        continue;
+
+                    var messageButtons = MessageBoxButton.OK;
+                    var message = string.Format("The file\n {0}\nalready exists in replay folder", file.FullPath);
+
+                    if (SelectedFiles.Count > 1)
+                    {
+                        message += "\n\nSkip all duplicates?";
+                        messageButtons = MessageBoxButton.YesNo;
+                    }
+
+                    MessageBoxResult result = MessageBox.Show(
+                        message,
+                        "Error",
+                        messageButtons,
+                        MessageBoxImage.Warning,
+                        MessageBoxResult.Yes);
+
+                    if (result == MessageBoxResult.Yes)
+                        skipAll = true;
+
+                    continue;
+                }
+
                 var resultPath = FileHelper.CopyFile(
                     file.Name,
                     file.FullPath,
