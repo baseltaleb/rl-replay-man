@@ -207,7 +207,7 @@
                 util:GridViewSort.SortGlyphAscending="/Images/up_arrow.ico"
                 util:GridViewSort.SortGlyphDescending="/Images/down_arrow.ico"
                 BorderBrush="LightBlue"
-                IsSynchronizedWithCurrentItem="True"
+                IsSynchronizedWithCurrentItem="False"
                 ItemsSource="{Binding SelectedFolder.Files}"
                 PreviewMouseUp="ListItemClicked">
                 <ListView.ItemTemplate>
@@ -256,7 +256,7 @@
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*" />
                                         </Grid.ColumnDefinitions>
-                                        <TextBlock HorizontalAlignment="Stretch" Text="{Binding Name}">
+                                        <TextBlock Text="{Binding Name}">
 
                                             <TextBlock.Style>
                                                 <Style TargetType="{x:Type TextBlock}">
@@ -274,11 +274,11 @@
 
                         </GridViewColumn>
 
-                        <GridViewColumn
+                        <!--<GridViewColumn
                             Width="Auto"
                             util:GridViewSort.PropertyName="FirstName"
                             DisplayMemberBinding="{Binding FirstName}"
-                            Header="Other" />
+                            Header="Other" />-->
                     </GridView>
                 </ListView.View>
             </ListView>
@@ -286,7 +286,7 @@
             <TextBlock
                 x:Name="ListEmptyLabel"
                 Grid.Row="1"
-                Margin="4"
+                Margin="6,24"
                 Foreground="Red"
                 Text="No replays in selected folder.">
                 <TextBlock.Style>
@@ -311,20 +311,67 @@
                 VerticalAlignment="Center"
                 Orientation="Vertical">
                 <Button
+                    x:Name="CopyButton"
                     Width="24"
                     Height="24"
                     Margin="4"
                     Click="Copy_Click"
                     ToolTip="Add to RL replays">
-                    <Image Source="Images/chevron_right.png" />
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <Setter Property="IsEnabled" Value="False" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding ElementName=fileList, Converter={StaticResource isGreaterThanZero}, Path=SelectedItems.Count}" Value="True">
+                                    <Setter Property="IsEnabled" Value="True" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                    <Image Source="Images/chevron_right.png">
+                        <Image.Style>
+                            <Style TargetType="Image">
+                                <Setter Property="Opacity" Value="0.4" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding ElementName=CopyButton, Path=IsEnabled}" Value="True">
+                                        <Setter Property="Opacity" Value="1" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Image.Style>
+                    </Image>
                 </Button>
 
                 <Button
+                    x:Name="DeleteButton"
                     Width="24"
                     Height="24"
                     Margin="4"
                     Click="Delete_Click">
-                    <Image Source="Images/delete.png" />
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <Setter Property="IsEnabled" Value="False" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding ElementName=fileList, Converter={StaticResource isGreaterThanZero}, Path=SelectedItems.Count}" Value="True">
+                                    <Setter Property="IsEnabled" Value="True" />
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding ElementName=currentFileList, Converter={StaticResource isGreaterThanZero}, Path=SelectedItems.Count}" Value="True">
+                                    <Setter Property="IsEnabled" Value="True" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                    <Image Source="Images/delete.png">
+                        <Image.Style>
+                            <Style TargetType="Image">
+                                <Setter Property="Opacity" Value="0.4" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding ElementName=DeleteButton, Path=IsEnabled}" Value="True">
+                                        <Setter Property="Opacity" Value="1" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Image.Style>
+                    </Image>
                 </Button>
 
             </StackPanel>
@@ -352,7 +399,7 @@
                 util:GridViewSort.SortGlyphAscending="/Images/up_arrow.ico"
                 util:GridViewSort.SortGlyphDescending="/Images/down_arrow.ico"
                 BorderBrush="LightBlue"
-                IsSynchronizedWithCurrentItem="True"
+                IsSynchronizedWithCurrentItem="False"
                 ItemsSource="{Binding ReplayDirectoryViewModel.ReplayFiles}"
                 PreviewMouseUp="ListItemClicked">
 
@@ -406,11 +453,11 @@
 
                         </GridViewColumn>
 
-                        <GridViewColumn
+                        <!--<GridViewColumn
                             Width="Auto"
                             util:GridViewSort.PropertyName="FirstName"
                             DisplayMemberBinding="{Binding FirstName}"
-                            Header="Other" />
+                            Header="Other" />-->
                     </GridView>
                 </ListView.View>
 

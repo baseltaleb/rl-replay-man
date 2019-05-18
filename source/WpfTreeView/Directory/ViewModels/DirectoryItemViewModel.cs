@@ -10,6 +10,8 @@ namespace WpfTreeView
     /// </summary>
     public class DirectoryItemViewModel : BaseViewModel
     {
+        private const string REPLAY_FILE_PATTERN = "*.replay";
+
         #region Public Properties
 
         /// <summary>
@@ -171,7 +173,7 @@ namespace WpfTreeView
 
         public void ReloadFiles()
         {
-            var children = DirectoryStructure.GetDirectoryFiles(this.FullPath);
+            var children = DirectoryStructure.GetDirectoryFiles(this.FullPath, REPLAY_FILE_PATTERN);
             this.Files = new ObservableCollection<DirectoryItemViewModel>(
                                 children.Select(content => new DirectoryItemViewModel(content.FullPath, content.Type, content.FileLength, Bookmarks)));
         }

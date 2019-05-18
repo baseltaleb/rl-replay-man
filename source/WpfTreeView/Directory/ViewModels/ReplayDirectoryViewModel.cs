@@ -17,7 +17,7 @@ namespace WpfTreeView
             }
         }
 
-        public string ReplayFilePattern = "*.replay";
+        private const string REPLAY_FILE_PATTERN = "*.replay";
 
         public bool HasMatch { get; set; }
 
@@ -28,7 +28,7 @@ namespace WpfTreeView
 
         public void ReloadFiles()
         {
-            var children = DirectoryStructure.GetDirectoryFiles(FullPath, ReplayFilePattern);
+            var children = DirectoryStructure.GetDirectoryFiles(FullPath, REPLAY_FILE_PATTERN);
 
             ReplayFiles = new ObservableCollection<DirectoryItemViewModel>(
                 children.Select(replay => new DirectoryItemViewModel(replay.FullPath, DirectoryItemType.File, replay.FileLength, null)));
