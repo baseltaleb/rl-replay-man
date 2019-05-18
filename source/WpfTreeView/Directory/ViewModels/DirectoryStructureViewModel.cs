@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
 
@@ -18,6 +17,7 @@ namespace WpfTreeView
         public ObservableCollection<DirectoryItemViewModel> Items { get; set; }
         public ReplayDirectoryViewModel ReplayDirectoryViewModel { get; set; }
 
+        public ObservableCollection<DirectoryItemViewModel> BookmarkedFolders { get; set; }
         public DirectoryItemViewModel SelectedFolder { get; set; }
 
         #endregion
@@ -40,19 +40,5 @@ namespace WpfTreeView
 
         #endregion
 
-        public void RemoveItems(List<DirectoryItemViewModel> items, ObservableCollection<DirectoryItemViewModel> itemList)
-        {
-            foreach (var item in items)
-            {
-                if (itemList.Contains(item))
-                    itemList.Remove(item);
-            }
-
-        }
-        public void RemoveItem(DirectoryItemViewModel item, ObservableCollection<DirectoryItemViewModel> itemList)
-        {
-            if (itemList.Contains(item))
-                itemList.Remove(item);
-        }
     }
 }

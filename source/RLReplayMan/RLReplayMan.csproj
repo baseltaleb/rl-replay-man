@@ -86,6 +86,7 @@
     <Compile Include="Helpers\GridViewSort.cs" />
     <Compile Include="Helpers\IsGreaterThanZero.cs" />
     <Compile Include="Helpers\PathComparer.cs" />
+    <Compile Include="Helpers\SelectedToImageConverter.cs" />
     <Compile Include="Helpers\StretchingTreeView.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
@@ -146,6 +147,7 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
+    <Resource Include="Images\bookmark_remove.png" />
     <Resource Include="Images\rl_logo_small.png" />
     <Resource Include="Images\delete.png" />
     <Resource Include="Images\chevron_left.png" />

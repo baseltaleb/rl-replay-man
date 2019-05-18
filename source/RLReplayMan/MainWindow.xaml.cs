@@ -22,24 +22,31 @@ namespace RLReplayMan
             InitializeComponent();
             FileBrowserViewModel = new DirectoryStructureViewModel(Settings.Default.Bookmarks);
             this.DataContext = FileBrowserViewModel;
-
+            FolderView.DataContext = FileBrowserViewModel;
             ((INotifyCollectionChanged)fileList.Items).CollectionChanged += FileList_SourceUpdated;
 
             if (Settings.Default.Bookmarks == null)
                 Settings.Default.Bookmarks = new System.Collections.Specialized.StringCollection();
+
+            FileBrowserViewModel.BookmarkedFolders = GetBookmarkedFolders();
         }
 
         private void Delete_Click(object sender, RoutedEventArgs e)
         {
-            var selectedItemViewModel = GetSelectedListView().ItemsSource as ObservableCollection<DirectoryItemViewModel>;
+            var selectedItemViewModel = GetSelectedListView().ItemsSource
+                as ObservableCollection<DirectoryItemViewModel>;
 
             if (selectedItemViewModel == null ||
                 SelectedFiles == null ||
                 SelectedFiles.Count == 0)
                 return;
 
+            var message = string.Format(
+                "Are you sure you want to delete the selected {0} files? ",
+                SelectedFiles.Count);
+
             MessageBoxResult result = MessageBox.Show(
-                string.Format("Are you sure you want to delete the selected {0} files? ", SelectedFiles.Count),
+                message,
                 "Delete",
                 MessageBoxButton.YesNo,
                 MessageBoxImage.Question);
@@ -47,12 +54,11 @@ namespace RLReplayMan
             if (result == MessageBoxResult.No)
                 return;
 
-
             foreach (var file in SelectedFiles)
             {
                 var success = FileHelper.DeleteFile(file.FullPath, false);
-                if (success)
-                    FileBrowserViewModel.RemoveItem(file, selectedItemViewModel);
+                if (success && selectedItemViewModel.Contains(file))
+                    selectedItemViewModel.Remove(file);
             }
         }
 
@@ -89,7 +95,6 @@ namespace RLReplayMan
                             FileHelper.GetFileLength(resultPath),
                             Settings.Default.Bookmarks));
             }
-
         }
 
         private ListView GetSelectedListView()
@@ -100,14 +105,35 @@ namespace RLReplayMan
                 return currentFileList;
         }
 
-        private void TreeViewItem_RequestBringIntoView(object sender, RequestBringIntoViewEventArgs e)
+        private ObservableCollection<DirectoryItemViewModel> GetBookmarkedFolders()
         {
-            e.Handled = true;
+            var bookmarkPaths = Settings.Default.Bookmarks;
+            var result = new ObservableCollection<DirectoryItemViewModel>();
+            foreach (var item in bookmarkPaths)
+            {
+                var bookmark = new DirectoryItemViewModel(item, DirectoryItemType.Folder, 0, null);
+                bookmark.ReloadFiles();
+                bookmark.IsBookmarked = true;
+                result.Add(bookmark);
+            }
+            return result;
+        }
+
+        private void ActiveTabChanged(object sender, RequestBringIntoViewEventArgs e)
+        {
+            if (tabControl.SelectedIndex == 0)
+            {
+                e.Handled = true;
+                FileBrowserViewModel.SelectedFolder = FolderView.SelectedItem as DirectoryItemViewModel;
+            }
+            else
+                FileBrowserViewModel.SelectedFolder = BookmarksList.SelectedItem as DirectoryItemViewModel;
         }
 
         private void BookmarkButton_Click(object sender, RoutedEventArgs e)
         {
-            var selectedFolder = FolderView.SelectedItem as DirectoryItemViewModel;
+            var selectedFolder = FileBrowserViewModel.SelectedFolder;
+
             if (selectedFolder.Type != DirectoryItemType.Folder)
                 return;
 
@@ -117,30 +143,19 @@ namespace RLReplayMan
             {
                 defaultSetting.Bookmarks.Remove(selectedFolder.FullPath);
                 selectedFolder.IsBookmarked = false;
+                FileBrowserViewModel.BookmarkedFolders.Remove(selectedFolder);
             }
             else
             {
                 defaultSetting.Bookmarks.Add(selectedFolder.FullPath);
+                FileBrowserViewModel.BookmarkedFolders.Add(selectedFolder);
                 selectedFolder.IsBookmarked = true;
             }
             defaultSetting.Save();
 
         }
 
-        private void BookmarksList_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
-        {
-            var bookmarkPaths = Settings.Default.Bookmarks;
-            var bookmarkViewModels = new List<DirectoryItemViewModel>();
-            foreach (var item in bookmarkPaths)
-            {
-                var bookmark = new DirectoryItemViewModel(item, DirectoryItemType.Folder, 0, null);
-                bookmark.ReloadFiles();
-                bookmark.IsBookmarked = true;
-                bookmarkViewModels.Add(bookmark);
-            }
-            BookmarksList.ItemsSource = bookmarkViewModels;
-        }
-
+        //TODO see if these two methods can be implemented in the view.
         private void BookmarksList_PreviewMouseUp(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
             FileBrowserViewModel.SelectedFolder = (BookmarksList.SelectedItem as DirectoryItemViewModel);
@@ -154,21 +169,11 @@ namespace RLReplayMan
         private void FileList_SourceUpdated(object sender, NotifyCollectionChangedEventArgs e)
         {
             var listView = sender as ListView;
-            //var _fileList = fileList.Items.Cast<DirectoryItemViewModel>().ToList();
-            //var replayList = currentFileList.Items.Cast<DirectoryItemViewModel>().ToList();
 
-            //var commonItems = _fileList.Except(replayList, new PathComparer()).ToList();
-            //foreach (var item in commonItems)
-            //{
-            //    item.IsHighlighted = true;
-            //}
-
-            //currentFileList.ItemsSource = commonItems;
             FileBrowserViewModel.ReplayDirectoryViewModel.ReloadFiles();
             foreach (var item in fileList.Items)
             {
                 var file = item as DirectoryItemViewModel;
-                //file.IsHighlighted = false;
 
                 for (int i = 0; i < currentFileList.Items.Count; i++)
                 {
@@ -183,5 +188,6 @@ namespace RLReplayMan
 
             }
         }
+
     }
 }

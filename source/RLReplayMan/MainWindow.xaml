@@ -15,6 +15,7 @@
     <Window.Resources>
         <local:IsGreaterThanZero x:Key="isGreaterThanZero" />
         <fview:DirectoryItemViewModel x:Key="SelectedFolder" />
+        <local:BoolToImageConverter x:Key="BookmarkedToImageConverter" />
     </Window.Resources>
 
     <Grid>
@@ -39,9 +40,9 @@
                         </Style.Triggers>
                     </Style>
                 </TabControl.Resources>
+
                 <!--  Browser view  -->
                 <TabItem x:Name="BrowserTabItem" Header="Browser">
-
                     <local:StretchingTreeView
                         x:Name="FolderView"
                         Grid.Row="1"
@@ -49,7 +50,8 @@
                         HorizontalAlignment="Stretch"
                         BorderBrush="Transparent"
                         BorderThickness="0"
-                        ItemsSource="{Binding Items}">
+                        ItemsSource="{Binding Items}"
+                        RequestBringIntoView="ActiveTabChanged">
 
                         <TreeView.Resources>
                             <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightBrushKey}" Color="{DynamicResource {x:Static SystemColors.HighlightColorKey}}" />
@@ -63,7 +65,6 @@
                                 </Style.Resources>
                                 <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
                                 <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}" />
-                                <EventSetter Event="RequestBringIntoView" Handler="TreeViewItem_RequestBringIntoView" />
                                 <EventSetter Event="Selected" Handler="TreeViewItem_Selected" />
                             </Style>
                         </TreeView.ItemContainerStyle>
@@ -91,19 +92,18 @@
                         </TreeView.ItemTemplate>
 
                     </local:StretchingTreeView>
-
                 </TabItem>
 
                 <!--  Bookmarks view  -->
                 <TabItem x:Name="BookmarksTabHeader" Header="Bookmarks">
-
                     <ListView
                         x:Name="BookmarksList"
                         Grid.Row="1"
                         Padding="0,6"
                         BorderThickness="0"
-                        IsVisibleChanged="BookmarksList_IsVisibleChanged"
-                        PreviewMouseUp="BookmarksList_PreviewMouseUp">
+                        ItemsSource="{Binding BookmarkedFolders}"
+                        PreviewMouseUp="BookmarksList_PreviewMouseUp"
+                        RequestBringIntoView="ActiveTabChanged">
                         <ListView.ItemTemplate>
                             <DataTemplate>
                                 <Grid>
@@ -131,6 +131,7 @@
 
             </TabControl>
 
+            <!--  Bookmark button  -->
             <Button
                 x:Name="BookmarkButton"
                 Width="24"
@@ -139,7 +140,27 @@
                 HorizontalAlignment="Right"
                 VerticalAlignment="Top"
                 Click="BookmarkButton_Click">
-                <Image Source="Images/bookmark.png" />
+
+                <Button.Resources>
+                    <Style TargetType="Button">
+                        <Setter Property="Visibility" Value="Hidden" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding SelectedFolder.Type}" Value="Folder">
+                                <Setter Property="Visibility" Value="Visible" />
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding SelectedFolder}" Value="null">
+                                <Setter Property="Visibility" Value="Hidden" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Resources>
+                <Image>
+                    <Image.Resources>
+                        <Style TargetType="Image">
+                            <Setter Property="Source" Value="{Binding SelectedFolder.IsBookmarked, Converter={StaticResource BookmarkedToImageConverter}}" />
+                        </Style>
+                    </Image.Resources>
+                </Image>
             </Button>
 
         </Grid>
