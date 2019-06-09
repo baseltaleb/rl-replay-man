@@ -3,7 +3,7 @@ using System.Windows.Controls;
 
 namespace RLReplayMan
 {
-    class StretchingTreeView : TreeView
+    public class StretchingTreeView : TreeView
     {
         protected override DependencyObject GetContainerForItemOverride()
         {
@@ -16,7 +16,7 @@ namespace RLReplayMan
         }
     }
 
-    class StretchingTreeViewItem : TreeViewItem
+    public class StretchingTreeViewItem : TreeViewItem
     {
         public StretchingTreeViewItem()
         {

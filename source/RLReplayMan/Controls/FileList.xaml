@@ -1,0 +1,67 @@
+﻿<ListView
+    x:Class="RLReplayMan.FileList"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:RLReplayMan"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:util="clr-namespace:Wpf.Util"
+    d:DataContext="{Binding Source={StaticResource mockViewModel}}"
+    d:DesignHeight="450"
+    d:DesignWidth="500"
+    ItemsSource="{Binding Files}"
+    mc:Ignorable="d">
+
+    <ListView.Resources>
+        <local:MockViewModel x:Key="mockViewModel" />
+    </ListView.Resources>
+
+    <ListView.View>
+        <GridView>
+            <GridViewColumn Width="Auto">
+                <GridViewColumnHeader IsEnabled="False" />
+                <GridViewColumn.CellTemplate>
+                    <DataTemplate>
+                        <StackPanel>
+                            <Image
+                                Width="12"
+                                Height="12"
+                                SnapsToDevicePixels="True"
+                                Source="pack://application:,,,/RLReplayMan;component/Images/rl_logo_small.png"
+                                UseLayoutRounding="True" />
+                        </StackPanel>
+                    </DataTemplate>
+                </GridViewColumn.CellTemplate>
+            </GridViewColumn>
+
+            <GridViewColumn
+                Width="Auto"
+                util:GridViewSort.PropertyName="Name"
+                Header="File name">
+
+                <GridViewColumn.CellTemplate>
+                    <DataTemplate>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="{Binding Name}">
+                                <TextBlock.Style>
+                                    <Style TargetType="{x:Type TextBlock}">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsHighlighted}" Value="True">
+                                                <Setter Property="Foreground" Value="#FFEB00FF" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </Grid>
+                    </DataTemplate>
+                </GridViewColumn.CellTemplate>
+
+            </GridViewColumn>
+
+        </GridView>
+    </ListView.View>
+</ListView>

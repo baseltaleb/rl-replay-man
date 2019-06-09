@@ -1,8 +1,11 @@
-﻿using RLReplayMan.Properties;
+﻿using HtmlAgilityPack;
+using RLReplayMan.Properties;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.Diagnostics;
 using System.Linq;
+using System.Net.Http;
 using System.Windows;
 using System.Windows.Controls;
 using WpfTreeView;
@@ -20,15 +23,45 @@ namespace RLReplayMan
         public MainWindow()
         {
             InitializeComponent();
+
             FileBrowserViewModel = new DirectoryStructureViewModel(Settings.Default.Bookmarks);
             this.DataContext = FileBrowserViewModel;
-            FolderView.DataContext = FileBrowserViewModel;
             ((INotifyCollectionChanged)fileList.Items).CollectionChanged += FileList_SourceUpdated;
+            ((INotifyCollectionChanged)currentFileList.Items).CollectionChanged += FileList_SourceUpdated;
 
             if (Settings.Default.Bookmarks == null)
                 Settings.Default.Bookmarks = new System.Collections.Specialized.StringCollection();
 
             FileBrowserViewModel.BookmarkedFolders = GetBookmarkedFolders();
+            GetHTMLAsync();
+        }
+
+        private async void GetHTMLAsync()
+        {
+            var url = "https://ballchasing.com";
+            var httpClient = new HttpClient();
+            var html = await httpClient.GetStringAsync(url);
+
+            var htmlDocument = new HtmlDocument();
+            htmlDocument.LoadHtml(html);
+
+            List<RemoteRplay> replayList = new List<RemoteRplay>();
+
+            var replaysHtml = htmlDocument.DocumentNode.Descendants("div")
+                .Where(node => node.GetAttributeValue("class", "")
+                .Equals("row1")).ToList();
+
+            foreach (var row in replaysHtml)
+            {
+                RemoteRplay replay = new RemoteRplay();
+                replay.Name = row.SelectSingleNode("h2/a").InnerText.Trim();
+
+                replay.Url = row.SelectSingleNode("div/div/a").Attributes["data-post-url"].Value.Trim();
+
+                replayList.Add(replay);
+            }
+
+            fileList.ItemsSource = replayList;
         }
 
         private void Delete_Click(object sender, RoutedEventArgs e)
@@ -186,7 +219,7 @@ namespace RLReplayMan
         //TODO see if these two methods can be implemented in the view.
         private void BookmarksList_PreviewMouseUp(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
-            FileBrowserViewModel.SelectedFolder = (BookmarksList.SelectedItem as DirectoryItemViewModel);
+            FileBrowserViewModel.SelectedFolder = BookmarksList.SelectedItem as DirectoryItemViewModel;
         }
 
         private void TreeViewItem_Selected(object sender, RoutedEventArgs e)
@@ -196,12 +229,21 @@ namespace RLReplayMan
 
         private void FileList_SourceUpdated(object sender, NotifyCollectionChangedEventArgs e)
         {
-            var listView = sender as ListView;
+            //FileBrowserViewModel.ReplayDirectoryViewModel.ReloadFiles();
+            HighlightDuplicateFiles();
+        }
 
-            FileBrowserViewModel.ReplayDirectoryViewModel.ReloadFiles();
+        private void HighlightDuplicateFiles()
+        {
+            foreach (var item in currentFileList.Items)
+                (item as DirectoryItemViewModel).IsHighlighted = false;
+
             foreach (var item in fileList.Items)
             {
                 var file = item as DirectoryItemViewModel;
+                if (file == null) return;
+
+                file.IsHighlighted = false;
 
                 for (int i = 0; i < currentFileList.Items.Count; i++)
                 {
@@ -213,9 +255,24 @@ namespace RLReplayMan
                         break;
                     }
                 }
-
             }
         }
 
+        private void RefreshCurrentReplayList(object sender, RoutedEventArgs e)
+        {
+            FileBrowserViewModel.ReplayDirectoryViewModel.ReloadFiles();
+        }
+        private void OpenReplayFolder(object sender, RoutedEventArgs e)
+        {
+            Process.Start(FileBrowserViewModel.ReplayDirectoryViewModel.FullPath);
+        }
+
+        private void TextBox_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            if (e.Key == System.Windows.Input.Key.Return)
+            {
+
+            }
+        }
     }
 }
