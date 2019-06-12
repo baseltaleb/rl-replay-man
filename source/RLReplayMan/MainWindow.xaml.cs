@@ -1,11 +1,10 @@
-﻿using HtmlAgilityPack;
-using RLReplayMan.Properties;
+﻿using RLReplayMan.Properties;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Linq;
-using System.Net.Http;
 using System.Windows;
 using System.Windows.Controls;
 using WpfTreeView;
@@ -18,7 +17,7 @@ namespace RLReplayMan
     public partial class MainWindow : Window
     {
         private DirectoryStructureViewModel FileBrowserViewModel;
-        private List<DirectoryItemViewModel> SelectedFiles;
+        private List<FileItemViewModel> SelectedFiles;
 
         public MainWindow()
         {
@@ -33,41 +32,41 @@ namespace RLReplayMan
                 Settings.Default.Bookmarks = new System.Collections.Specialized.StringCollection();
 
             FileBrowserViewModel.BookmarkedFolders = GetBookmarkedFolders();
-            GetHTMLAsync();
+            var handler = new DownloadHandler();
+            handler.OnDownloadUpdatedFired += Handler_OnDownloadUpdatedFired;
+            WebsiteBrowser.DownloadHandler = handler;
+
         }
 
-        private async void GetHTMLAsync()
+        private void Handler_OnDownloadUpdatedFired(object sender, CefSharp.DownloadItem downloadItem)
         {
-            var url = "https://ballchasing.com";
-            var httpClient = new HttpClient();
-            var html = await httpClient.GetStringAsync(url);
-
-            var htmlDocument = new HtmlDocument();
-            htmlDocument.LoadHtml(html);
-
-            List<RemoteRplay> replayList = new List<RemoteRplay>();
-
-            var replaysHtml = htmlDocument.DocumentNode.Descendants("div")
-                .Where(node => node.GetAttributeValue("class", "")
-                .Equals("row1")).ToList();
-
-            foreach (var row in replaysHtml)
+            if (downloadItem.IsComplete)
             {
-                RemoteRplay replay = new RemoteRplay();
-                replay.Name = row.SelectSingleNode("h2/a").InnerText.Trim();
+                var fName = WebHelper.ExtractFileNameFromURL(downloadItem.Url) + ".replay";
 
-                replay.Url = row.SelectSingleNode("div/div/a").Attributes["data-post-url"].Value.Trim();
+                var resultPath = FileHelper.CopyFile(
+                    fName,
+                    downloadItem.FullPath,
+                    FileBrowserViewModel.ReplayDirectoryViewModel.FullPath);
 
-                replayList.Add(replay);
+                if (resultPath != null)
+                {
+                    Application.Current.Dispatcher.Invoke(new Action(() =>
+                    {
+                        FileBrowserViewModel.ReplayDirectoryViewModel.AddItem(
+                            new FileItemViewModel(
+                                resultPath,
+                                FileHelper.GetFileLength(resultPath)));
+                    }));
+                }
+                FileHelper.DeleteFile(downloadItem.FullPath, false);
             }
-
-            fileList.ItemsSource = replayList;
         }
 
         private void Delete_Click(object sender, RoutedEventArgs e)
         {
             var selectedItemViewModel = GetSelectedListView().ItemsSource
-                as ObservableCollection<DirectoryItemViewModel>;
+                as ObservableCollection<FileItemViewModel>;
 
             if (selectedItemViewModel == null ||
                 SelectedFiles == null ||
@@ -108,10 +107,10 @@ namespace RLReplayMan
                 if (list != listView)
                     list.UnselectAll();
 
-            SelectedFiles = listView.SelectedItems.Cast<DirectoryItemViewModel>().ToList();
+            SelectedFiles = listView.SelectedItems.Cast<FileItemViewModel>().ToList();
         }
 
-        private void Copy_Click(object sender, RoutedEventArgs e)
+        private async void Copy_Click(object sender, RoutedEventArgs e)
         {
             bool skipAll = false;
             foreach (var file in SelectedFiles)
@@ -143,18 +142,29 @@ namespace RLReplayMan
                     continue;
                 }
 
-                var resultPath = FileHelper.CopyFile(
-                    file.Name,
-                    file.FullPath,
-                    FileBrowserViewModel.ReplayDirectoryViewModel.FullPath);
+                string resultPath;
+                if (file.IsRemote)
+                {
+                    var fName = FileBrowserViewModel.ReplayDirectoryViewModel.FullPath +
+                        file.Name +
+                        ReplayDirectoryViewModel.REPLAY_FILE_PATTERN;
+                    var url = WebHelper.ExtractDomainNameFromURL(AddressText.Text) +
+                        file.FullPath;
+                    resultPath = await WebHelper.DownloadFile(url, fName);
+                }
+                else
+                {
+                    resultPath = FileHelper.CopyFile(
+                        file.Name,
+                        file.FullPath,
+                        FileBrowserViewModel.ReplayDirectoryViewModel.FullPath);
+                }
 
                 if (resultPath != null)
                     FileBrowserViewModel.ReplayDirectoryViewModel.AddItem(
-                        new DirectoryItemViewModel(
+                        new FileItemViewModel(
                             resultPath,
-                            DirectoryItemType.File,
-                            FileHelper.GetFileLength(resultPath),
-                            Settings.Default.Bookmarks));
+                            FileHelper.GetFileLength(resultPath)));
             }
         }
 
@@ -236,19 +246,28 @@ namespace RLReplayMan
         private void HighlightDuplicateFiles()
         {
             foreach (var item in currentFileList.Items)
-                (item as DirectoryItemViewModel).IsHighlighted = false;
+                (item as FileItemViewModel).IsHighlighted = false;
 
             foreach (var item in fileList.Items)
             {
-                var file = item as DirectoryItemViewModel;
+                var file = item as FileItemViewModel;
                 if (file == null) return;
 
                 file.IsHighlighted = false;
 
                 for (int i = 0; i < currentFileList.Items.Count; i++)
                 {
-                    var _replay = currentFileList.Items[i] as DirectoryItemViewModel;
-                    if (FileHelper.AreEqual(_replay.FullPath, file.FullPath))
+                    FileItemViewModel _replay;
+                    _replay = currentFileList.Items[i] as FileItemViewModel;
+
+                    var isMatch = false;
+
+                    if (file.IsRemote)
+                        isMatch = FileHelper.AreEqual(_replay.Name, file.Name, true);
+                    else
+                        isMatch = FileHelper.AreEqual(_replay.Name, file.Name, false);
+
+                    if (isMatch)
                     {
                         _replay.IsHighlighted = true;
                         file.IsHighlighted = true;
@@ -267,11 +286,15 @@ namespace RLReplayMan
             Process.Start(FileBrowserViewModel.ReplayDirectoryViewModel.FullPath);
         }
 
-        private void TextBox_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        private async void AddressText_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
         {
             if (e.Key == System.Windows.Input.Key.Return)
             {
+                var res = await WebHelper.GetReplaysFromUrl(AddressText.Text);
+                var _folder = FileBrowserViewModel.SelectedFolder = new DirectoryItemViewModel(AddressText.Text, DirectoryItemType.Folder, 0, null);
 
+                _folder.Files = res;
+                FileBrowserViewModel.SelectedFolder = _folder;
             }
         }
     }

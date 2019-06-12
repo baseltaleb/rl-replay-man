@@ -44,7 +44,7 @@ namespace WpfTreeView
         /// </summary>
         public ObservableCollection<DirectoryItemViewModel> Folders { get; set; }
 
-        public ObservableCollection<DirectoryItemViewModel> Files { get; set; }
+        public ObservableCollection<FileItemViewModel> Files { get; set; }
 
         /// <summary>
         /// Indicates if this item can be expanded
@@ -174,8 +174,8 @@ namespace WpfTreeView
         public void ReloadFiles()
         {
             var children = DirectoryStructure.GetDirectoryFiles(this.FullPath, REPLAY_FILE_PATTERN);
-            this.Files = new ObservableCollection<DirectoryItemViewModel>(
-                                children.Select(content => new DirectoryItemViewModel(content.FullPath, content.Type, content.FileLength, Bookmarks)));
+            this.Files = new ObservableCollection<FileItemViewModel>(
+                                children.Select(content => new FileItemViewModel(content.FullPath, content.FileLength)));
         }
 
         public void RemoveItem(string itemPath)

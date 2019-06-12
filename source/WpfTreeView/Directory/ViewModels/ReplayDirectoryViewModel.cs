@@ -6,7 +6,7 @@ namespace WpfTreeView
 {
     public class ReplayDirectoryViewModel : BaseViewModel
     {
-        public ObservableCollection<DirectoryItemViewModel> ReplayFiles { get; set; }
+        public ObservableCollection<FileItemViewModel> ReplayFiles { get; set; }
 
         public new string FullPath
         {
@@ -17,7 +17,7 @@ namespace WpfTreeView
             }
         }
 
-        private const string REPLAY_FILE_PATTERN = "*.replay";
+        public const string REPLAY_FILE_PATTERN = "*.replay";
 
         public bool HasMatch { get; set; }
 
@@ -30,11 +30,11 @@ namespace WpfTreeView
         {
             var children = DirectoryStructure.GetDirectoryFiles(FullPath, REPLAY_FILE_PATTERN);
 
-            ReplayFiles = new ObservableCollection<DirectoryItemViewModel>(
-                children.Select(replay => new DirectoryItemViewModel(replay.FullPath, DirectoryItemType.File, replay.FileLength, null)));
+            ReplayFiles = new ObservableCollection<FileItemViewModel>(
+                children.Select(replay => new FileItemViewModel(replay.FullPath, replay.FileLength)));
         }
 
-        public void AddItem(DirectoryItemViewModel item)
+        public void AddItem(FileItemViewModel item)
         {
             ReplayFiles.Add(item);
         }

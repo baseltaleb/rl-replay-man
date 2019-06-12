@@ -1,13 +1,14 @@
-﻿using System.Collections.Specialized;
-using System.Windows.Input;
+﻿using System.Windows.Input;
 
 namespace WpfTreeView
 {
-    class FileItemViewModel : BaseViewModel
+    public class FileItemViewModel : BaseViewModel
     {
         private const string REPLAY_FILE_PATTERN = "*.replay";
 
         #region Public Properties
+
+        public bool IsRemote { get; set; }
 
         /// <summary>
         /// The type of this item
@@ -27,7 +28,7 @@ namespace WpfTreeView
         /// <summary>
         /// The name of this directory item
         /// </summary>
-        public string Name { get { return DirectoryStructure.GetFileFolderName(this.FullPath); } }
+        public string Name { get; set; }
 
         public long FileLength { get; set; }
 
@@ -64,15 +65,21 @@ namespace WpfTreeView
         /// </summary>
         /// <param name="fullPath">The full path of this item</param>
         /// <param name="type">The type of item</param>
-        public FileItemViewModel(string fullPath, DirectoryItemType type, long fileLength, StringCollection bookmarks)
+        public FileItemViewModel(string fullPath, long fileLength, string name = "")
         {
             // Create commands
             this.ClickCommand = new RelayCommand(Click);
 
             // Set path and type
             this.FullPath = fullPath;
-            this.Type = type;
             this.FileLength = fileLength;
+
+            if (name == "")
+            {
+                Name = DirectoryStructure.GetFileFolderName(this.FullPath);
+            }
+            else
+                Name = name;
         }
 
         public FileItemViewModel() { }

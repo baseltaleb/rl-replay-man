@@ -84,10 +84,20 @@ namespace RLReplayMan
             return new FileInfo(fullPath).Length;
         }
 
-        public static bool AreEqual(string firstPath, string secondPath)
+        public static bool AreEqual(string firstFile, string secondFile, bool shallow = true)
         {
-            return new FileInfo(firstPath).Length == new FileInfo(secondPath).Length &&
-                File.ReadAllBytes(firstPath).SequenceEqual(File.ReadAllBytes(secondPath));
+            var result = firstFile.Equals(secondFile);
+            try
+            {
+                if (result && !shallow)
+                    result = new FileInfo(firstFile).Length == new FileInfo(secondFile).Length &&
+                        File.ReadAllBytes(firstFile).SequenceEqual(File.ReadAllBytes(secondFile));
+            }
+            catch (Exception)
+            {
+                result = false;
+            }
+            return result;
         }
 
         //public static bool AreEqual(string firstPath, string secondPath)

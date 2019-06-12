@@ -144,10 +144,11 @@
 
             <StackPanel>
                 <TextBox
+                    x:Name="AddressText"
                     Height="24"
                     VerticalAlignment="Center"
                     Background="LightGray"
-                    KeyDown="TextBox_KeyDown"
+                    KeyDown="AddressText_KeyDown"
                     Text="{Binding SelectedFolder.FullPath}" />
                 <Label VerticalAlignment="Bottom" Content="Replays in selected folder" />
 
