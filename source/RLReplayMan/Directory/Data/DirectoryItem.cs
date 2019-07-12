@@ -1,4 +1,4 @@
-﻿namespace WpfTreeView
+﻿namespace RLReplayMan
 {
     /// <summary>
     /// Information about a directory item such as a drive, a file or a folder

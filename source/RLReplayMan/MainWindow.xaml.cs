@@ -9,7 +9,6 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Threading;
-using WpfTreeView;
 
 namespace RLReplayMan
 {
@@ -26,7 +25,9 @@ namespace RLReplayMan
         {
             InitializeComponent();
 
-            //FileHelper.CheckFolderExists(ReplayDirectoryViewModel.)
+            if (!FileHelper.CheckFolderExists(Globals.RL_REPLAY_FOLDER_PATH))
+                MessageBox.Show("Default Rocket League replay folder not found!");
+
             FileBrowserViewModel = new DirectoryStructureViewModel(Settings.Default.Bookmarks);
             this.DataContext = FileBrowserViewModel;
             FileBrowserViewModel.UseWeb = true;
@@ -34,7 +35,7 @@ namespace RLReplayMan
             ((INotifyCollectionChanged)currentFileList.Items).CollectionChanged += FileList_SourceUpdated;
 
             if (Settings.Default.Bookmarks == null)
-                Settings.Default.Bookmarks = new System.Collections.Specialized.StringCollection();
+                Settings.Default.Bookmarks = new StringCollection();
 
             FileBrowserViewModel.BookmarkedFolders = GetBookmarkedFolders();
             var handler = new DownloadHandler();
@@ -59,8 +60,8 @@ namespace RLReplayMan
             if (downloadItem.IsComplete)
             {
                 var fName = WebHelper.ExtractFileNameFromURL(downloadItem.Url);
-                if (!fName.EndsWith(".replay"))
-                    fName += ".replay";
+                if (!fName.EndsWith(Globals.RL_REPLAY_EXTENSION))
+                    fName += Globals.RL_REPLAY_EXTENSION;
 
                 var resultPath = FileHelper.CopyFile(
                     fName,
@@ -98,7 +99,6 @@ namespace RLReplayMan
         }
 
         //Event listener
-        bool stateListenerInit = false;
         private void ChromeView_NavStateChanged(object sender, CefSharp.LoadingStateChangedEventArgs e)
         {
 

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Windows.Input;
 
-namespace WpfTreeView
+namespace RLReplayMan
 {
     /// <summary>
     /// A basic command that runs an Action

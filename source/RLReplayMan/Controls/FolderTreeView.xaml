@@ -3,7 +3,6 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:fview="clr-namespace:WpfTreeView;assembly=WpfTreeView"
     xmlns:local="clr-namespace:RLReplayMan"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     d:DataContext="{Binding Source={StaticResource mockViewModel}}"
@@ -41,7 +40,7 @@
                     Grid.Column="0"
                     Width="20"
                     Margin="3"
-                    Source="{Binding ImageName, Converter={x:Static fview:HeaderToImageConverter.Instance}}" />
+                    Source="{Binding ImageName, Converter={x:Static local:HeaderToImageConverter.Instance}}" />
                 <TextBlock
                     Grid.Column="1"
                     VerticalAlignment="Center"

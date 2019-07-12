@@ -2,8 +2,9 @@
 using System.Collections.ObjectModel;
 using System.Linq;
 
-namespace WpfTreeView
+namespace RLReplayMan
 {
+
     public class ReplayDirectoryViewModel : BaseViewModel
     {
         public ObservableCollection<FileItemViewModel> ReplayFiles { get; set; }

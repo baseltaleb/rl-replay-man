@@ -1,7 +1,7 @@
 ﻿using PropertyChanged;
 using System.ComponentModel;
 
-namespace WpfTreeView
+namespace RLReplayMan
 {
     /// <summary>
     /// A base view model that fires Property Changed events as needed

@@ -4,7 +4,6 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:cefSharp="clr-namespace:CefSharp.Wpf;assembly=CefSharp.Wpf"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:fview="clr-namespace:WpfTreeView;assembly=WpfTreeView"
     xmlns:local="clr-namespace:RLReplayMan"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:util="clr-namespace:Wpf.Util"
@@ -16,7 +15,7 @@
 
     <Window.Resources>
         <local:IsGreaterThanZero x:Key="isGreaterThanZero" />
-        <fview:DirectoryItemViewModel x:Key="SelectedFolder" />
+        <local:DirectoryItemViewModel x:Key="SelectedFolder" />
         <local:BoolToImageConverter x:Key="BookmarkedToImageConverter" />
         <local:UrlBookmarkConverter x:Key="UrlBookmarkConverter" />
         <local:MockViewModel x:Key="mockViewModel" />

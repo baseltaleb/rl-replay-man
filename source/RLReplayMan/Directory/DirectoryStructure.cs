@@ -2,7 +2,7 @@
 using System.IO;
 using System.Linq;
 
-namespace WpfTreeView
+namespace RLReplayMan
 {
     /// <summary>
     /// A helper class to query information about directories

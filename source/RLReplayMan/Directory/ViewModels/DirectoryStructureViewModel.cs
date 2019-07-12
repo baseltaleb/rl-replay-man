@@ -2,7 +2,7 @@
 using System.Collections.Specialized;
 using System.Linq;
 
-namespace WpfTreeView
+namespace RLReplayMan
 {
     /// <summary>
     /// The view model for the applications main Directory view

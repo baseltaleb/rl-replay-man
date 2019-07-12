@@ -3,7 +3,7 @@ using System.Globalization;
 using System.Windows.Data;
 using System.Windows.Media.Imaging;
 
-namespace WpfTreeView
+namespace RLReplayMan
 {
     /// <summary>
     /// Converts a full path to a specific image type of a drive, folder or file
@@ -15,7 +15,7 @@ namespace WpfTreeView
 
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            return new BitmapImage(new Uri($"pack://application:,,,/WpfTreeView;component/Images/{value}.png"));
+            return new BitmapImage(new Uri($"pack://application:,,,/RLReplayMan;component/Images/{value}.png"));
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

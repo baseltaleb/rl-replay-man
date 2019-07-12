@@ -1,4 +1,4 @@
-﻿namespace WpfTreeView
+﻿namespace RLReplayMan
 {
     /// <summary>
     /// The type of a directory item

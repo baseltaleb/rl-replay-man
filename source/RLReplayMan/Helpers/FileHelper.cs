@@ -11,7 +11,7 @@ namespace RLReplayMan
     {
         public static bool CheckFolderExists(string path)
         {
-            if (System.IO.File.Exists(path))
+            if (Directory.Exists(path))
                 return true;
             else
                 return false;
