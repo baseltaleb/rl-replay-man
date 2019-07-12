@@ -104,6 +104,9 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Globals.cs" />
+    <Compile Include="Models\ReplayDirectoryViewModel.cs" />
+    <Compile Include="Settings.cs" />
     <Page Include="Controls\BookmarkList.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -146,6 +149,7 @@
     <Compile Include="Helpers\PathComparer.cs" />
     <Compile Include="Helpers\SelectedToImageConverter.cs" />
     <Compile Include="Controls\StretchingTreeView.cs" />
+    <Compile Include="Helpers\UrlBookmarkConverter.cs" />
     <Compile Include="Helpers\WebHelper.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
@@ -219,9 +223,7 @@
     <Resource Include="Images\bookmark.png" />
     <Content Include="Images\bookmark.svg" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Models\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>

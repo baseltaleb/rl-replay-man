@@ -3,11 +3,20 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Windows;
+using System.Windows.Threading;
 
 namespace RLReplayMan
 {
     static class FileHelper
     {
+        public static bool CheckFolderExists(string path)
+        {
+            if (System.IO.File.Exists(path))
+                return true;
+            else
+                return false;
+        }
+
         public static bool DeleteFile(string filePath, bool showMessage = true)
         {
             try
@@ -39,6 +48,7 @@ namespace RLReplayMan
                 return false;
             }
         }
+
         public static void DeleteFiles(List<string> filePaths)
         {
             try
@@ -58,7 +68,6 @@ namespace RLReplayMan
             }
         }
 
-
         public static string CopyFile(string fileName, string originalPath, string destinationPath)
         {
             try
@@ -69,12 +78,16 @@ namespace RLReplayMan
             }
             catch (Exception e)
             {
-                MessageBoxResult result = MessageBox.Show(
+                Application.Current.Dispatcher.Invoke(DispatcherPriority.Normal, new Action(() =>
+                {
+                    MessageBox.Show(Application.Current.MainWindow,
                     "File copy faild: " + e.Message,
                     "Error",
                     MessageBoxButton.OK,
                     MessageBoxImage.Error);
 
+
+                }));
                 return null;
             }
         }

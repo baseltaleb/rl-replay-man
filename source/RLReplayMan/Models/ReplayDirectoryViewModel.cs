@@ -4,7 +4,6 @@ using System.Linq;
 
 namespace WpfTreeView
 {
-
     public class ReplayDirectoryViewModel : BaseViewModel
     {
         public ObservableCollection<FileItemViewModel> ReplayFiles { get; set; }

@@ -20,6 +20,7 @@ namespace WpfTreeView
         public ObservableCollection<DirectoryItemViewModel> BookmarkedFolders { get; set; }
         public DirectoryItemViewModel SelectedFolder { get; set; }
 
+        public bool UseWeb { get; set; }
         #endregion
 
         #region Constructor

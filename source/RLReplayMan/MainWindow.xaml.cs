@@ -1,4 +1,5 @@
-﻿using RLReplayMan.Properties;
+﻿using CefSharp;
+using RLReplayMan.Properties;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -7,6 +8,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Threading;
 using WpfTreeView;
 
 namespace RLReplayMan
@@ -16,6 +18,7 @@ namespace RLReplayMan
     /// </summary>
     public partial class MainWindow : Window
     {
+        private const bool USE_WEB_ONLY = true;
         private DirectoryStructureViewModel FileBrowserViewModel;
         private List<FileItemViewModel> SelectedFiles;
 
@@ -23,8 +26,10 @@ namespace RLReplayMan
         {
             InitializeComponent();
 
+            //FileHelper.CheckFolderExists(ReplayDirectoryViewModel.)
             FileBrowserViewModel = new DirectoryStructureViewModel(Settings.Default.Bookmarks);
             this.DataContext = FileBrowserViewModel;
+            FileBrowserViewModel.UseWeb = true;
             ((INotifyCollectionChanged)fileList.Items).CollectionChanged += FileList_SourceUpdated;
             ((INotifyCollectionChanged)currentFileList.Items).CollectionChanged += FileList_SourceUpdated;
 
@@ -34,15 +39,28 @@ namespace RLReplayMan
             FileBrowserViewModel.BookmarkedFolders = GetBookmarkedFolders();
             var handler = new DownloadHandler();
             handler.OnDownloadUpdatedFired += Handler_OnDownloadUpdatedFired;
+            handler.OnBeforeDownloadFired += Handler_onBeforeDownload;
             WebsiteBrowser.DownloadHandler = handler;
+            WebsiteBrowser.LoadingStateChanged += ChromeView_NavStateChanged;
 
+        }
+
+        private void Handler_onBeforeDownload(object sender, DownloadItem e)
+        {
+            Dispatcher.Invoke(new Action(() =>
+            {
+                loadingBar.IsIndeterminate = false;
+                loadingBar.Visibility = Visibility.Visible;
+            }), DispatcherPriority.ContextIdle);
         }
 
         private void Handler_OnDownloadUpdatedFired(object sender, CefSharp.DownloadItem downloadItem)
         {
             if (downloadItem.IsComplete)
             {
-                var fName = WebHelper.ExtractFileNameFromURL(downloadItem.Url) + ".replay";
+                var fName = WebHelper.ExtractFileNameFromURL(downloadItem.Url);
+                if (!fName.EndsWith(".replay"))
+                    fName += ".replay";
 
                 var resultPath = FileHelper.CopyFile(
                     fName,
@@ -59,9 +77,49 @@ namespace RLReplayMan
                                 FileHelper.GetFileLength(resultPath)));
                     }));
                 }
+                Dispatcher.Invoke(new Action(() =>
+                {
+                    loadingBar.IsIndeterminate = true;
+                    loadingBar.Visibility = Visibility.Collapsed;
+                }), DispatcherPriority.ContextIdle);
+
                 FileHelper.DeleteFile(downloadItem.FullPath, false);
+
+            }
+            else
+            {
+                Dispatcher.Invoke(new Action(() =>
+                {
+                    loadingBar.Visibility = Visibility.Visible;
+                    loadingBar.Value = downloadItem.PercentComplete;
+                }), DispatcherPriority.ContextIdle);
+
             }
         }
+
+        //Event listener
+        bool stateListenerInit = false;
+        private void ChromeView_NavStateChanged(object sender, CefSharp.LoadingStateChangedEventArgs e)
+        {
+
+            this.Dispatcher.Invoke(() =>
+            {
+                if (!e.IsLoading)
+                {
+                    FileBrowserViewModel.SelectedFolder = new DirectoryItemViewModel(
+                        WebsiteBrowser.Address,
+                        DirectoryItemType.Folder,
+                        0,
+                        null);
+                    loadingBar.Visibility = Visibility.Collapsed; //UI Update
+                }
+                else
+                {
+                    loadingBar.Visibility = Visibility.Visible; //UI Update
+                }
+            });
+        }
+
 
         private void Delete_Click(object sender, RoutedEventArgs e)
         {
@@ -192,6 +250,11 @@ namespace RLReplayMan
 
         private void ActiveTabChanged(object sender, RequestBringIntoViewEventArgs e)
         {
+            if (FileBrowserViewModel.UseWeb)
+            {
+                e.Handled = true;
+                return;
+            }
             if (tabControl.SelectedIndex == 0)
             {
                 e.Handled = true;
@@ -203,18 +266,28 @@ namespace RLReplayMan
 
         private void BookmarkButton_Click(object sender, RoutedEventArgs e)
         {
-            var selectedFolder = FileBrowserViewModel.SelectedFolder;
-
-            if (selectedFolder.Type != DirectoryItemType.Folder)
+            DirectoryItemViewModel selectedFolder;
+            //if (FileBrowserViewModel.UseWeb)
+            //{
+            //    selectedFolder = new DirectoryItemViewModel(
+            //        WebsiteBrowser.Address,
+            //        DirectoryItemType.Folder,
+            //        0,
+            //        null);
+            //}
+            //else
+            //{
+            selectedFolder = FileBrowserViewModel.SelectedFolder;
+            if (selectedFolder == null || selectedFolder.Type != DirectoryItemType.Folder)
                 return;
-
+            //}
             var defaultSetting = Settings.Default;
 
             if (defaultSetting.Bookmarks.Contains(selectedFolder.FullPath))
             {
+                var result = FileBrowserViewModel.BookmarkedFolders.Remove(selectedFolder);
                 defaultSetting.Bookmarks.Remove(selectedFolder.FullPath);
                 selectedFolder.IsBookmarked = false;
-                FileBrowserViewModel.BookmarkedFolders.Remove(selectedFolder);
             }
             else
             {
@@ -229,18 +302,22 @@ namespace RLReplayMan
         //TODO see if these two methods can be implemented in the view.
         private void BookmarksList_PreviewMouseUp(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
-            FileBrowserViewModel.SelectedFolder = BookmarksList.SelectedItem as DirectoryItemViewModel;
+            var selectedItem = BookmarksList.SelectedItem as DirectoryItemViewModel;
+            FileBrowserViewModel.SelectedFolder = selectedItem;
+
         }
 
         private void TreeViewItem_Selected(object sender, RoutedEventArgs e)
         {
-            FileBrowserViewModel.SelectedFolder = FolderView.SelectedItem as DirectoryItemViewModel;
+            if (!FileBrowserViewModel.UseWeb)
+                FileBrowserViewModel.SelectedFolder = FolderView.SelectedItem as DirectoryItemViewModel;
         }
 
         private void FileList_SourceUpdated(object sender, NotifyCollectionChangedEventArgs e)
         {
             //FileBrowserViewModel.ReplayDirectoryViewModel.ReloadFiles();
-            HighlightDuplicateFiles();
+            if (!FileBrowserViewModel.UseWeb)
+                HighlightDuplicateFiles();
         }
 
         private void HighlightDuplicateFiles()
@@ -281,6 +358,7 @@ namespace RLReplayMan
         {
             FileBrowserViewModel.ReplayDirectoryViewModel.ReloadFiles();
         }
+
         private void OpenReplayFolder(object sender, RoutedEventArgs e)
         {
             Process.Start(FileBrowserViewModel.ReplayDirectoryViewModel.FullPath);
@@ -290,12 +368,27 @@ namespace RLReplayMan
         {
             if (e.Key == System.Windows.Input.Key.Return)
             {
-                var res = await WebHelper.GetReplaysFromUrl(AddressText.Text);
-                var _folder = FileBrowserViewModel.SelectedFolder = new DirectoryItemViewModel(AddressText.Text, DirectoryItemType.Folder, 0, null);
-
-                _folder.Files = res;
-                FileBrowserViewModel.SelectedFolder = _folder;
+                if (AddressText.Text.ToLower() == "local")
+                {
+                    FileBrowserViewModel.UseWeb = false;
+                }
+                else
+                {
+                    LoadUrlFromTextInput(null, null);
+                }
             }
+
+            //var res = await WebHelper.GetReplaysFromUrl(AddressText.Text);
+            //var _folder = FileBrowserViewModel.SelectedFolder = new DirectoryItemViewModel(AddressText.Text, DirectoryItemType.Folder, 0, null);
+
+            //_folder.Files = res;
+            //FileBrowserViewModel.SelectedFolder = _folder;
+        }
+
+        private void LoadUrlFromTextInput(object sender, RoutedEventArgs e)
+        {
+            FileBrowserViewModel.UseWeb = true;
+            WebsiteBrowser.Address = AddressText.Text;
         }
     }
 }

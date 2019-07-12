@@ -18,6 +18,7 @@
         <local:IsGreaterThanZero x:Key="isGreaterThanZero" />
         <fview:DirectoryItemViewModel x:Key="SelectedFolder" />
         <local:BoolToImageConverter x:Key="BookmarkedToImageConverter" />
+        <local:UrlBookmarkConverter x:Key="UrlBookmarkConverter" />
         <local:MockViewModel x:Key="mockViewModel" />
 
         <Style TargetType="Button">
@@ -36,11 +37,12 @@
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="240" />
             <ColumnDefinition Width="auto" />
-            <ColumnDefinition Width="2.5*" />
+            <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
 
         <!--  Left browser panel  -->
         <Grid Background="#eee">
+
             <TabControl
                 x:Name="tabControl"
                 Grid.Row="0"
@@ -131,58 +133,120 @@
             Background="#eee">
 
             <Grid.RowDefinitions>
-                <RowDefinition Height="auto" />
-                <RowDefinition Height="2*" />
-                <RowDefinition Height="2*" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height=".1*" />
             </Grid.RowDefinitions>
 
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
 
-            <StackPanel>
-                <TextBox
-                    x:Name="AddressText"
+            <!--  Browser / selected file grid  -->
+            <Grid Width="auto">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="3" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <!--  Address bar and go button grid  -->
+                <Grid Grid.Row="0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBox
+                        x:Name="AddressText"
+                        Grid.Row="0"
+                        Height="24"
+                        VerticalAlignment="Center"
+                        Background="White"
+                        KeyDown="AddressText_KeyDown"
+                        Text="{Binding SelectedFolder.FullPath}" />
+                    <Button
+                        Grid.Column="1"
+                        Width="24"
+                        Height="24"
+                        Click="LoadUrlFromTextInput"
+                        Content="GO" />
+                </Grid>
+
+                <ProgressBar
+                    Name="loadingBar"
+                    Grid.Row="1"
+                    Height="3"
+                    VerticalAlignment="Top"
+                    IsIndeterminate="True"
+                    Maximum="100"
+                    Minimum="0"
+                    Visibility="Visible" />
+
+                <cefSharp:ChromiumWebBrowser
+                    x:Name="WebsiteBrowser"
+                    Grid.Row="2"
+                    Address="https://ballchasing.com"
+                    Background="White">
+                    <cefSharp:ChromiumWebBrowser.Style>
+                        <Style TargetType="cefSharp:ChromiumWebBrowser">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding UseWeb}" Value="False">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </cefSharp:ChromiumWebBrowser.Style>
+
+                </cefSharp:ChromiumWebBrowser>
+
+                <local:FileList
+                    x:Name="fileList"
+                    Grid.Row="2"
+                    util:GridViewSort.AutoSort="True"
+                    util:GridViewSort.SortGlyphAscending="/Images/up_arrow.ico"
+                    util:GridViewSort.SortGlyphDescending="/Images/down_arrow.ico"
+                    BorderBrush="LightBlue"
+                    IsSynchronizedWithCurrentItem="False"
+                    ItemsSource="{Binding SelectedFolder.Files}"
+                    PreviewMouseUp="ListItemClicked">
+                    <ListView.Style>
+                        <Style TargetType="ListView">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding UseWeb}" Value="True">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding UseWeb}" Value="False">
+                                    <Setter Property="Visibility" Value="Visible" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </ListView.Style>
+                </local:FileList>
+
+                <TextBlock
+                    x:Name="ListEmptyLabel"
+                    Grid.Row="2"
                     Height="24"
-                    VerticalAlignment="Center"
-                    Background="LightGray"
-                    KeyDown="AddressText_KeyDown"
-                    Text="{Binding SelectedFolder.FullPath}" />
-                <Label VerticalAlignment="Bottom" Content="Replays in selected folder" />
+                    Margin="6,24"
+                    VerticalAlignment="Top"
+                    Foreground="Red"
+                    Text="No replays in selected folder.">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding ElementName=fileList, Converter={StaticResource isGreaterThanZero}, Path=Items.Count}" Value="True">
+                                    <Setter Property="Visibility" Value="Hidden" />
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding UseWeb}" Value="True">
+                                    <Setter Property="Visibility" Value="Hidden" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
 
-            </StackPanel>
-
-            <local:FileList
-                x:Name="fileList"
-                Grid.Row="1"
-                util:GridViewSort.AutoSort="True"
-                util:GridViewSort.SortGlyphAscending="/Images/up_arrow.ico"
-                util:GridViewSort.SortGlyphDescending="/Images/down_arrow.ico"
-                BorderBrush="LightBlue"
-                IsSynchronizedWithCurrentItem="False"
-                ItemsSource="{Binding SelectedFolder.Files}"
-                PreviewMouseUp="ListItemClicked" />
-
-            <TextBlock
-                x:Name="ListEmptyLabel"
-                Grid.Row="1"
-                Height="24"
-                Margin="6,24"
-                VerticalAlignment="Top"
-                Foreground="Red"
-                Text="No replays in selected folder.">
-                <TextBlock.Style>
-                    <Style TargetType="TextBlock">
-                        <Style.Triggers>
-                            <DataTrigger Binding="{Binding ElementName=fileList, Converter={StaticResource isGreaterThanZero}, Path=Items.Count}" Value="True">
-                                <Setter Property="Visibility" Value="Hidden" />
-                            </DataTrigger>
-                        </Style.Triggers>
-                    </Style>
-                </TextBlock.Style>
-            </TextBlock>
+            </Grid>
 
             <StackPanel Grid.Row="0" Grid.Column="1">
                 <Label Height="24" Background="LightGray" />
@@ -190,10 +254,11 @@
             </StackPanel>
 
             <StackPanel
-                Grid.Row="1"
+                Grid.Row="0"
                 Grid.Column="1"
                 VerticalAlignment="Center"
                 Orientation="Vertical">
+
                 <Button
                     x:Name="CopyButton"
                     Width="24"
@@ -244,6 +309,7 @@
                             </Style.Triggers>
                         </Style>
                     </Button.Style>
+
                     <Image Source="Images/delete.png">
                         <Image.Style>
                             <Style TargetType="Image">
@@ -263,47 +329,66 @@
             <Grid
                 Grid.Row="0"
                 Grid.Column="2"
-                VerticalAlignment="Top"
                 Background="LightGray">
 
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
-                    <RowDefinition />
-                    <RowDefinition />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
+
                 <Label
                     Height="24"
                     VerticalAlignment="Center"
                     Background="LightGray"
                     Content="{Binding ReplayDirectoryViewModel.FullPath}" />
 
-                <Button
-                    Grid.Row="1"
-                    Grid.Column="1"
-                    Width="24"
-                    Height="24"
-                    Click="OpenReplayFolder">
-                    <Image SnapsToDevicePixels="True" Source="Images/open_in_browser.png" />
-                </Button>
-                <Button
-                    Grid.Row="1"
-                    Grid.Column="2"
-                    Width="24"
-                    Height="24"
-                    Click="RefreshCurrentReplayList">
-                    <Image SnapsToDevicePixels="True" Source="Images/refresh.png" />
-                </Button>
+                <!--  RL Replay folder buttons and label  -->
+                <Grid Grid.Row="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <Button
+                        Grid.Row="1"
+                        Grid.Column="1"
+                        Width="24"
+                        Height="24"
+                        Click="OpenReplayFolder">
+                        <Image SnapsToDevicePixels="True" Source="Images/open_in_browser.png" />
+                    </Button>
 
-                <Label
-                    Grid.Row="1"
-                    Grid.Column="0"
-                    VerticalAlignment="Bottom"
-                    Background="#eee"
-                    Content="Current replays" />
+                    <Button
+                        Grid.Row="1"
+                        Grid.Column="2"
+                        Width="24"
+                        Height="24"
+                        Click="RefreshCurrentReplayList">
+                        <Image SnapsToDevicePixels="True" Source="Images/refresh.png" />
+                    </Button>
+
+                    <Label
+                        Grid.Row="1"
+                        Grid.Column="0"
+                        VerticalAlignment="Bottom"
+                        Background="#eee"
+                        Content="Current replays" />
+                </Grid>
+
+                <local:FileList
+                    x:Name="currentFileList"
+                    Grid.Row="2"
+                    HorizontalContentAlignment="Stretch"
+                    VerticalContentAlignment="Stretch"
+                    util:GridViewSort.AutoSort="True "
+                    util:GridViewSort.SortGlyphAscending="/Images/up_arrow.ico"
+                    util:GridViewSort.SortGlyphDescending="/Images/down_arrow.ico"
+                    BorderBrush="LightBlue"
+                    IsSynchronizedWithCurrentItem="False"
+                    ItemsSource="{Binding ReplayDirectoryViewModel.ReplayFiles}"
+                    PreviewMouseUp="ListItemClicked" />
+
             </Grid>
 
             <!--<ListView
@@ -373,23 +458,6 @@
 
             </ListView>-->
 
-            <local:FileList
-                x:Name="currentFileList"
-                Grid.Row="1"
-                Grid.Column="2"
-                HorizontalContentAlignment="Stretch"
-                util:GridViewSort.AutoSort="True"
-                util:GridViewSort.SortGlyphAscending="/Images/up_arrow.ico"
-                util:GridViewSort.SortGlyphDescending="/Images/down_arrow.ico"
-                BorderBrush="LightBlue"
-                IsSynchronizedWithCurrentItem="False"
-                ItemsSource="{Binding ReplayDirectoryViewModel.ReplayFiles}"
-                PreviewMouseUp="ListItemClicked" />
-
-            <Grid Grid.Row="2" Background="#eee">
-                <cefSharp:ChromiumWebBrowser x:Name="WebsiteBrowser" Address="https://ballchasing.com" />
-
-            </Grid>
 
         </Grid>
 
